@@ -1,24 +1,26 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @Slf4j
 public class UserController {
-    private final HashMap<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new ConcurrentHashMap<>();
     private int lastId = 0;
 
     @PostMapping("/users")
     public User addUser(@Valid @RequestBody User.SimpleUser user) {
         String userName = user.getName();
-        if (userName == null || userName.isBlank()) {
+        if (!StringUtils.hasText(userName)) {
             userName = user.getLogin();
         }
 
