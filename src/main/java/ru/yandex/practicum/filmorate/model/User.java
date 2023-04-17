@@ -5,12 +5,12 @@ import lombok.Data;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
 public class User {
-    @NotNull(message = "Id пользователя должен быть заполнен.")
-    private final int id;
+    private final Long id;
     @NotNull
     @Email(message = "Неверно указан адрес электронной почты.")
     private final String email;
@@ -22,20 +22,13 @@ public class User {
     @NotNull
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private final LocalDate birthday;
+    private final Set<Long> friends;
 
-    @Data
-    @Builder
-    public static class SimpleUser {
-        @NotNull
-        @Email(message = "Неверно указан адрес электронной почты.")
-        private final String email;
-        @NotNull
-        @NotBlank(message = "Логин не может быть пустым.")
-        @Pattern(regexp = "^\\S+$", message = "Логин не может содержать пробелы.")
-        private final String login;
-        private final String name;
-        @NotNull
-        @PastOrPresent(message = "Дата рождения не может быть в будущем.")
-        private final LocalDate birthday;
+    public void addFriend(Long userId) {
+        friends.add(userId);
+    }
+
+    public void removeFriend(Long userId) {
+       friends.removeIf(p -> p.equals(userId));
     }
 }

@@ -19,17 +19,17 @@ public class UserTest {
 
     @Test
     public void createInvalidUsersTest() {
-        Collection<User.SimpleUser> users = new ArrayList<>();
+        Collection<User> users = new ArrayList<>();
 
         //Нет адреса почты
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .name("Name")
                 .login("Login")
                 .birthday(LocalDate.of(1000,1,1))
                 .build());
 
         //Неправильный адреса почты
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("11111")
                 .name("Name")
                 .login("Login")
@@ -37,14 +37,14 @@ public class UserTest {
                 .build());
 
         //Нет логина
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("1@1.ru")
                 .name("Name")
                 .birthday(LocalDate.of(1000,1,1))
                 .build());
 
         //Логин с пробелами
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("1@1.ru")
                 .name("Name")
                 .login("Log in")
@@ -52,7 +52,7 @@ public class UserTest {
                 .build());
 
         //Пустой пробелами
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("1@1.ru")
                 .name("Name")
                 .login("")
@@ -60,14 +60,14 @@ public class UserTest {
                 .build());
 
         //Нет даты рождения
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("1@1.ru")
                 .name("Name")
                 .login("Log in")
                 .build());
 
         //Дата рождения в будущем
-        users.add(User.SimpleUser.builder()
+        users.add(User.builder()
                 .email("1@1.ru")
                 .name("Name")
                 .login("Log in")
