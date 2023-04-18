@@ -28,14 +28,14 @@ public class FilmService {
         Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
         film.addLike(user.getId());
-        log.info("Фильму с id " + id + " поставил лайк пользователь с id "+ userId);
+        log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
 
     public void removeLike(Long id, Long userId) throws ValidationException {
         Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
         film.removeLike(user.getId());
-        log.info("У фильма с id " + id + " удален лайк пользователя с id "+ userId);
+        log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 
     public Collection<Film> getPopularFilms(Integer count) {
