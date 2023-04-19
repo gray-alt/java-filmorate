@@ -24,6 +24,22 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
+
+    public Film updateFilm(Film film) throws ValidationException {
+        return filmStorage.updateFilm(film);
+    }
+
+    public Film getFilm(Long id) throws ValidationException {
+        return filmStorage.getFilm(id);
+    }
+
+    public Collection<Film> getFilms() {
+        return filmStorage.getFilms();
+    }
+
     public void addLike(Long id, Long userId) throws ValidationException {
         Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);

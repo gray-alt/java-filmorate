@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -15,33 +14,31 @@ import java.util.Collection;
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final UserStorage usersStorage;
     private final UserService userService;
 
     @Autowired
-    public UserController(UserStorage usersStorage, UserService userService) {
-        this.usersStorage = usersStorage;
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        return usersStorage.addUser(user);
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) throws ValidationException {
-        return usersStorage.updateUser(user);
+        return userService.updateUser(user);
     }
 
     @GetMapping
     public Collection<User> getUsers() {
-        return usersStorage.getUsers();
+        return userService.getUsers();
     }
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) throws ValidationException {
-        return usersStorage.getUser(id);
+        return userService.getUser(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

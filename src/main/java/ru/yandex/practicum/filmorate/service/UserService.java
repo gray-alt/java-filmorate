@@ -21,6 +21,22 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
+    public User addUser(User user) {
+        return userStorage.addUser(user);
+    }
+
+    public User updateUser(User user) throws ValidationException {
+        return userStorage.updateUser(user);
+    }
+
+    public User getUser(Long id) throws ValidationException {
+        return userStorage.getUser(id);
+    }
+
+    public Collection<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
     public void addFriend(Long userId, Long friendId) throws ValidationException {
         User user = userStorage.getUser(userId);
         User friend = userStorage.getUser(friendId);
