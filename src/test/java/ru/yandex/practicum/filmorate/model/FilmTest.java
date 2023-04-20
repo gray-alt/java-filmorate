@@ -18,17 +18,17 @@ public class FilmTest {
 
     @Test
     public void createInvalidFilmTest() {
-        Collection<Film.SimpleFilm> films = new ArrayList<>();
+        Collection<Film> films = new ArrayList<>();
 
         //Нет названия
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .description("Description")
                 .releaseDate(LocalDate.of(2000,1,1))
                 .duration(50)
                 .build());
 
         //Пустое названия
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .name("")
                 .description("Description")
                 .releaseDate(LocalDate.of(2000,1,1))
@@ -36,14 +36,14 @@ public class FilmTest {
                 .build());
 
         //Нет даты релиза
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .name("Name")
                 .description("Description")
                 .duration(50)
                 .build());
 
         //Дата релиза раньше 1895 года
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(1000,1,1))
@@ -51,14 +51,14 @@ public class FilmTest {
                 .build());
 
         //Нет продолжительности
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(1000,1,1))
                 .build());
 
         //Продолжительность отрицательная
-        films.add(Film.SimpleFilm.builder()
+        films.add(Film.builder()
                 .name("Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(1000,1,1))

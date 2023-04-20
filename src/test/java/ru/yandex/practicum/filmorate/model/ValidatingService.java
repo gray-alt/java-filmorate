@@ -16,15 +16,15 @@ public class ValidatingService {
         this.validator = validator;
     }
 
-    public void validateSimpleUser(User.SimpleUser user) throws ValidationException {
-        Set<ConstraintViolation<User.SimpleUser>> violations = validator.validate(user);
+    public void validateSimpleUser(User user) throws ValidationException {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
         if (!violations.isEmpty()) {
             throw new ValidationException("Ошибка валидации");
         }
     }
 
-    public void validateSimpleFilm(Film.SimpleFilm film) throws ValidationException {
-        Set<ConstraintViolation<Film.SimpleFilm>> violations = validator.validate(film);
+    public void validateSimpleFilm(Film film) throws ValidationException {
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
         if (!violations.isEmpty()) {
             throw new ValidationException("Ошибка валидации");
         }
