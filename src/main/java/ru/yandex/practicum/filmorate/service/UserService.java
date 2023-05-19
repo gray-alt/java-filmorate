@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,8 +17,7 @@ import java.util.Set;
 public class UserService {
     private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -38,31 +38,18 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) throws ValidationException {
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
-        log.info("Пользователю с id " + userId + " добавлен друг с id " + friendId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) throws ValidationException {
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
-        user.removeFriend(friendId);
-        friend.removeFriend(userId);
-        log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     public Collection<User> getFriends(Long id) throws ValidationException {
-        Set<Long> friendsId = userStorage.getUser(id).getFriends();
-        return userStorage.getUsersByIds(friendsId);
+        return userStorage.getFriends(id);
     }
 
     public Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException {
-        Set<Long> friendsId = new HashSet<>(userStorage.getUser(id).getFriends());
-        Set<Long> otherFriendsId = userStorage.getUser(otherId).getFriends();
-
-        friendsId.retainAll(otherFriendsId);
-        return userStorage.getUsersByIds(friendsId);
+        return userStorage.getCommonFriends(id, otherId);
     }
 }

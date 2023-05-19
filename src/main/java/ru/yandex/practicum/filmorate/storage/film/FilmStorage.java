@@ -13,4 +13,10 @@ public interface FilmStorage {
     Film getFilm(Long id) throws ValidationException;
 
     Collection<Film> getFilms();
+
+    void addLike(Long id, Long userId) throws ValidationException;
+
+    void removeLike(Long id, Long userId) throws ValidationException;
+
+    Collection<Film> getPopularFilms(Integer count);
 }

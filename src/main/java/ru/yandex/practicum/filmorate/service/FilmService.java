@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -18,8 +18,8 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -41,23 +41,16 @@ public class FilmService {
     }
 
     public void addLike(Long id, Long userId) throws ValidationException {
-        Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
-        film.addLike(user.getId());
-        log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
+        filmStorage.addLike(id, user.getId());
     }
 
     public void removeLike(Long id, Long userId) throws ValidationException {
-        Film film = filmStorage.getFilm(id);
         User user = userStorage.getUser(userId);
-        film.removeLike(user.getId());
-        log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
+        filmStorage.removeLike(id, user.getId());
     }
 
     public Collection<Film> getPopularFilms(Integer count) {
-        return filmStorage.getFilms().stream()
-                .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getPopularFilms(count);
     }
 }

@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Component("inMemoryUserStorage")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new ConcurrentHashMap<>();
@@ -58,6 +58,44 @@ public class InMemoryUserStorage implements UserStorage {
         return getUserById(id);
     }
 
+    @Override
+    public Collection<User> getUsers() {
+        return users.values();
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) throws ValidationException {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        user.addFriend(friendId);
+        friend.addFriend(userId);
+        log.info("Пользователю с id " + userId + " добавлен друг с id " + friendId);
+    }
+
+    @Override
+    public void removeFriend(Long userId, Long friendId) throws ValidationException {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        user.removeFriend(friendId);
+        friend.removeFriend(userId);
+        log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
+    }
+
+    @Override
+    public Collection<User> getFriends(Long id) throws ValidationException {
+        Set<Long> friendsId = getUserById(id).getFriends();
+        return getUsersByIds(friendsId);
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException {
+        Set<Long> friendsId = new HashSet<>(getUserById(id).getFriends());
+        Set<Long> otherFriendsId = getUserById(otherId).getFriends();
+
+        friendsId.retainAll(otherFriendsId);
+        return getUsersByIds(friendsId);
+    }
+
     private User getUserById(Long id) throws ValidationException {
         if (id == null) {
             throw new ValidationException("Не передан id пользователя.");
@@ -68,12 +106,7 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(id);
     }
 
-    @Override
-    public Collection<User> getUsers() {
-        return users.values();
-    }
-
-    public Collection<User> getUsersByIds(Set<Long> usersId) {
+    private Collection<User> getUsersByIds(Set<Long> usersId) {
         Collection<User> userList = new ArrayList<>();
         usersId.forEach(id -> userList.add(users.get(id)));
         return userList;
