@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -101,15 +100,30 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "insert into friends(user_id, friend_id, status)" +
                 "values(?, ?, ?)";
 
-        jdbcTemplate.update(sqlQuery, friend.getId(), user.getId(), 0);
-        log.info("Пользователю с id " + friendId + " отправлена заявка в друзья от пользователя с id " + userId);
+        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId(), 0);
+        log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) throws ValidationException {
         String sqlQuery = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
-        log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
+        log.info("У пользователя с id " + userId + " удален друг с id " + friendId);
+    }
+
+    @Override
+    public void confirmFriend(Long userId, Long friendId) throws ValidationException {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+
+        String sqlQuery = "update friends set " +
+                "status = ? " +
+                "where user_id = ? and friend_id = ?; " +
+                "insert into friends(user_id, friend_id, status)" +
+                "values(?, ?, ?)";
+
+        jdbcTemplate.update(sqlQuery, 1, user.getId(), friend.getId(), friend.getId(), user.getId(), 1);
+        log.info("Пользователь с id " + userId + " подтвердил заявку в друзья от пользователя с id " + friendId);
     }
 
     @Override
@@ -121,7 +135,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException {
         String sqlQuery = "select * from users where user_id in (" +
-                    "select friend_id from friends as friends " +
+                    "select friends.friend_id from friends as friends " +
                     "inner join friends as other_friends " +
                     "on friends.friend_id = other_friends.friend_id "  +
                     "where  friends.user_id = ? and other_friends.user_id = ?" +
@@ -133,8 +147,7 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "select * from users where user_id = ?";
 
         try {
-            User user = jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
-            return user;
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
         } catch (IncorrectResultSizeDataAccessException e) {
             throw new NotFoundException("Пользователя с id " + id + " не существует.");
         }

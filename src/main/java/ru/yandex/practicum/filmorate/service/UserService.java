@@ -1,16 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -43,6 +41,10 @@ public class UserService {
 
     public void removeFriend(Long userId, Long friendId) throws ValidationException {
         userStorage.removeFriend(userId, friendId);
+    }
+
+    public void confirmFriend(Long id, Long friendId) {
+        userStorage.confirmFriend(id, friendId);
     }
 
     public Collection<User> getFriends(Long id) throws ValidationException {

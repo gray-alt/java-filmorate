@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
-import java.util.Set;
 
 public interface UserStorage {
     User addUser(User user);
@@ -18,6 +17,8 @@ public interface UserStorage {
     void addFriend(Long userId, Long friendId) throws ValidationException;
 
     void removeFriend(Long userId, Long friendId) throws ValidationException;
+
+    void confirmFriend(Long id, Long friendId) throws ValidationException;
 
     Collection<User> getFriends(Long id) throws ValidationException;
 

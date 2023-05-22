@@ -96,6 +96,11 @@ public class InMemoryUserStorage implements UserStorage {
         return getUsersByIds(friendsId);
     }
 
+    @Override
+    public void confirmFriend(Long id, Long friendId) throws ValidationException {
+
+    }
+
     private User getUserById(Long id) throws ValidationException {
         if (id == null) {
             throw new ValidationException("Не передан id пользователя.");

@@ -26,9 +26,9 @@ public class Film {
     @NotNull
     @Positive(message = "Продолжительность фильма должна быть положительной.")
     private final int duration;
-    private final Integer mpaId;
+    private final Mpa mpa;
     private final Set<Long> likes;
-    private final Set<Long> genres;
+    private final Set<Genre> genres;
 
     public void addLike(Long userId) {
         likes.add(userId);
@@ -44,7 +44,7 @@ public class Film {
         values.put("description", description);
         values.put("release_date", releaseDate);
         values.put("duration", duration);
-        values.put("mpa_id", mpaId);
+        values.put("mpa_id", mpa.getId());
         return values;
     }
 }

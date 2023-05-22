@@ -51,6 +51,11 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
+    @PutMapping("/{id}/friends/confirm/{friendId}")
+    public void confirmFriend(@PathVariable Long id, @PathVariable Long friendId) throws ValidationException {
+        userService.confirmFriend(id, friendId);
+    }
+
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable Long id) throws ValidationException {
         return userService.getFriends(id);
