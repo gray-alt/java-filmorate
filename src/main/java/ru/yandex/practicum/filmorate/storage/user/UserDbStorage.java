@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -24,7 +21,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User addUser(User user) {
+    public Optional<User> addUser(User user) {
         Map<String, Object> userMap = user.toMap();
 
         String userName = user.getName();
@@ -49,24 +46,26 @@ public class UserDbStorage implements UserStorage {
                 .build();
 
         log.info("Добавлен пользователь: " + newUser.getName());
-        return newUser;
+        return Optional.of(newUser);
     }
 
     @Override
-    public User updateUser(User user) throws ValidationException {
-        User foundUser = getUserById(user.getId());
-
+    public Optional<User> updateUser(User user) {
         String sqlQuery =
                 "update users set " +
                 "login = ?, email = ?, name = ?, birthday = ? " +
                 "where user_id = ?";
 
-        jdbcTemplate.update(sqlQuery,
+        int rowCount =jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
                 user.getEmail(),
                 user.getName(),
                 user.getBirthday(),
                 user.getId());
+
+        if (rowCount == 0) {
+            return Optional.empty();
+        }
 
         User newUser = User.builder()
                 .id(user.getId())
@@ -74,15 +73,15 @@ public class UserDbStorage implements UserStorage {
                 .email(user.getEmail())
                 .name(user.getName())
                 .birthday(user.getBirthday())
-                .friends(foundUser.getFriends())
+                .friends(user.getFriends())
                 .build();
 
         log.info("Обновлен пользователь: " + newUser.getName());
-        return newUser;
+        return Optional.of(newUser);
     }
 
     @Override
-    public User getUser(Long id) throws ValidationException {
+    public Optional<User> getUser(Long id) {
         return getUserById(id);
     }
 
@@ -93,47 +92,38 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(Long userId, Long friendId) throws ValidationException {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-
-        String sqlQuery = "insert into friends(user_id, friend_id, status)" +
-                "values(?, ?, ?)";
-
-        jdbcTemplate.update(sqlQuery, user.getId(), friend.getId(), 0);
+    public void addFriend(Long userId, Long friendId){
+        String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
+        jdbcTemplate.update(sqlQuery, userId, friendId, 0);
         log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
     }
 
     @Override
-    public void removeFriend(Long userId, Long friendId) throws ValidationException {
+    public void removeFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
         log.info("У пользователя с id " + userId + " удален друг с id " + friendId);
     }
 
     @Override
-    public void confirmFriend(Long userId, Long friendId) throws ValidationException {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-
+    public void confirmFriend(Long userId, Long friendId) {
         String sqlQuery = "update friends set " +
                 "status = ? " +
                 "where user_id = ? and friend_id = ?; " +
-                "insert into friends(user_id, friend_id, status)" +
-                "values(?, ?, ?)";
+                "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
 
-        jdbcTemplate.update(sqlQuery, 1, user.getId(), friend.getId(), friend.getId(), user.getId(), 1);
+        jdbcTemplate.update(sqlQuery, 1, userId, friendId, friendId, userId, 1);
         log.info("Пользователь с id " + userId + " подтвердил заявку в друзья от пользователя с id " + friendId);
     }
 
     @Override
-    public Collection<User> getFriends(Long id) throws ValidationException {
+    public Collection<User> getFriends(Long id) {
         String sqlQuery = "select * from users where user_id in (select friend_id from friends where user_id = ?)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
 
     @Override
-    public Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException {
+    public Collection<User> getCommonFriends(Long id, Long otherId) {
         String sqlQuery = "select * from users where user_id in (" +
                     "select friends.friend_id from friends as friends " +
                     "inner join friends as other_friends " +
@@ -143,14 +133,14 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 
-    private User getUserById(Long id) throws ValidationException {
+    private Optional<User> getUserById(Long id) {
         String sqlQuery = "select * from users where user_id = ?";
-
-        try {
-            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
-        } catch (IncorrectResultSizeDataAccessException e) {
-            throw new NotFoundException("Пользователя с id " + id + " не существует.");
+        List<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
+        if (users.isEmpty()) {
+            return Optional.empty();
         }
+
+        return Optional.of(users.get(0));
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
@@ -163,4 +153,5 @@ public class UserDbStorage implements UserStorage {
                 .friends(new HashSet<>())
                 .build();
     }
+
 }

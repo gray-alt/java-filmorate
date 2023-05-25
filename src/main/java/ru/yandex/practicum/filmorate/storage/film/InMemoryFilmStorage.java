@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private long lastId = 0;
 
     @Override
-    public Film addFilm(Film film) {
+    public Optional<Film> addFilm(Film film) {
         Film newFilm = Film.builder()
                 .id(++lastId)
                 .name(film.getName())
@@ -33,27 +34,27 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         log.info("Добавлен фильм: " + newFilm.getName());
         films.put(newFilm.getId(), newFilm);
-        return newFilm;
+        return Optional.of(newFilm);
     }
 
     @Override
-    public Film updateFilm(Film film) throws ValidationException {
-        Film foundFilm = getFilmById(film.getId());
+    public Optional<Film> updateFilm(Film film) throws ValidationException {
+        Optional<Film> foundFilm = getFilmById(film.getId());
         Film newFilm = Film.builder()
                 .id(film.getId())
                 .name(film.getName())
                 .description(film.getDescription())
                 .duration(film.getDuration())
                 .releaseDate(film.getReleaseDate())
-                .likes(foundFilm.getLikes())
+                .likes(foundFilm.get().getLikes())
                 .build();
         log.info("Обновлен фильм: " + newFilm.getName());
         films.put(newFilm.getId(), newFilm);
-        return newFilm;
+        return Optional.of(newFilm);
     }
 
     @Override
-    public Film getFilm(Long id) throws ValidationException {
+    public Optional<Film> getFilm(Long id) throws ValidationException {
         return getFilmById(id);
     }
 
@@ -64,15 +65,15 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long id, Long userId) throws ValidationException {
-        Film film = getFilmById(id);
-        film.addLike(userId);
+        Optional<Film> film = getFilmById(id);
+        film.get().addLike(userId);
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
 
     @Override
     public void removeLike(Long id, Long userId) throws ValidationException {
-        Film film = getFilmById(id);
-        film.removeLike(userId);
+        Optional<Film> film = getFilmById(id);
+        film.get().removeLike(userId);
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 
@@ -90,8 +91,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Mpa getMpaById(int id) {
-        return null;
+    public Optional<Mpa> getMpaById(int id) {
+        return Optional.empty();
     }
 
     @Override
@@ -100,17 +101,17 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Genre getGenreById(int id) {
-        return null;
+    public Optional<Genre> getGenreById(int id) {
+        return Optional.empty();
     }
 
-    private Film getFilmById(Long id) throws ValidationException {
+    private Optional<Film> getFilmById(Long id) throws ValidationException {
         if (id == null) {
             throw new ValidationException("Не передан id фильма.");
         } else if (!films.containsKey(id)) {
             throw new NotFoundException("Фильма с id " + id + " не существует.");
         }
 
-        return films.get(id);
+        return Optional.of(films.get(id));
     }
 }

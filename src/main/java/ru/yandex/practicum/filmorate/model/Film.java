@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,13 +39,17 @@ public class Film {
         likes.removeIf(p -> p.equals(userId));
     }
 
+    public Integer getMpaId() {
+        return (mpa == null ? null : mpa.getId());
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
         values.put("name", name);
         values.put("description", description);
         values.put("release_date", releaseDate);
         values.put("duration", duration);
-        values.put("mpa_id", mpa.getId());
+        values.put("mpa_id", getMpaId());
         return values;
     }
 }

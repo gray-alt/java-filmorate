@@ -28,16 +28,19 @@ CREATE TABLE IF NOT EXISTS genres (
 
 CREATE TABLE IF NOT EXISTS film_genres (
 	film_id BIGINT REFERENCES films (film_id),
-	genre_id INTEGER REFERENCES genres (genre_id)
+	genre_id INTEGER REFERENCES genres (genre_id),
+	CONSTRAINT PK_FILM_GENRES PRIMARY KEY (film_id,genre_id)
 );
 
 CREATE TABLE IF NOT EXISTS film_likes (
 	film_id BIGINT REFERENCES films (film_id),
-	user_id BIGINT REFERENCES users (user_id)
+	user_id BIGINT REFERENCES users (user_id),
+	CONSTRAINT PK_FILM_LIKES PRIMARY KEY (film_id,user_id)
 );
 
 CREATE TABLE IF NOT EXISTS friends (
 	user_id BIGINT REFERENCES users (user_id),
 	friend_id BIGINT REFERENCES users (user_id),
-	status BOOLEAN
+	status BOOLEAN,
+	CONSTRAINT PK_FRIENDS PRIMARY KEY (user_id,friend_id)
 );

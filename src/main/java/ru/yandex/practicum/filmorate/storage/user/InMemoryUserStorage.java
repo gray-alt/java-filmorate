@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -17,7 +16,7 @@ public class InMemoryUserStorage implements UserStorage {
     private long lastId = 0;
 
     @Override
-    public User addUser(User user) {
+    public Optional<User> addUser(User user) {
         String userName = user.getName();
         if (!StringUtils.hasText(userName)) {
             userName = user.getLogin();
@@ -34,27 +33,31 @@ public class InMemoryUserStorage implements UserStorage {
 
         log.info("Добавлен пользователь: " + user.getLogin());
         users.put(newUser.getId(), newUser);
-        return newUser;
+        return Optional.of(newUser);
     }
 
     @Override
-    public User updateUser(User user) throws ValidationException {
-        User foundUser = getUserById(user.getId());
+    public Optional<User> updateUser(User user) throws ValidationException {
+        Optional<User> foundUser = getUserById(user.getId());
+        if (foundUser.isEmpty()) {
+            return foundUser;
+        }
+
         User newUser = User.builder()
                 .id(user.getId())
                 .login(user.getLogin())
                 .email(user.getEmail())
                 .name(user.getName())
                 .birthday(user.getBirthday())
-                .friends(foundUser.getFriends())
+                .friends(foundUser.get().getFriends())
                 .build();
         log.info("Обновлен пользователь: " + newUser.getName());
         users.put(newUser.getId(), newUser);
-        return newUser;
+        return Optional.of(newUser);
     }
 
     @Override
-    public User getUser(Long id) throws ValidationException {
+    public Optional<User> getUser(Long id) throws ValidationException {
         return getUserById(id);
     }
 
@@ -65,32 +68,32 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) throws ValidationException {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
+        Optional<User> user = getUserById(userId);
+        Optional<User> friend = getUserById(friendId);
+        user.get().addFriend(friendId);
+        friend.get().addFriend(userId);
         log.info("Пользователю с id " + userId + " добавлен друг с id " + friendId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) throws ValidationException {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.removeFriend(friendId);
-        friend.removeFriend(userId);
+        Optional<User> user = getUserById(userId);
+        Optional<User> friend = getUserById(friendId);
+        user.get().removeFriend(friendId);
+        friend.get().removeFriend(userId);
         log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
     }
 
     @Override
     public Collection<User> getFriends(Long id) throws ValidationException {
-        Set<Long> friendsId = getUserById(id).getFriends();
+        Set<Long> friendsId = getUserById(id).get().getFriends();
         return getUsersByIds(friendsId);
     }
 
     @Override
     public Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException {
-        Set<Long> friendsId = new HashSet<>(getUserById(id).getFriends());
-        Set<Long> otherFriendsId = getUserById(otherId).getFriends();
+        Set<Long> friendsId = new HashSet<>(getUserById(id).get().getFriends());
+        Set<Long> otherFriendsId = getUserById(otherId).get().getFriends();
 
         friendsId.retainAll(otherFriendsId);
         return getUsersByIds(friendsId);
@@ -101,14 +104,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     }
 
-    private User getUserById(Long id) throws ValidationException {
-        if (id == null) {
-            throw new ValidationException("Не передан id пользователя.");
-        } else if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователя с id " + id + " не существует.");
+    private Optional<User> getUserById(Long id) throws ValidationException {
+        if (!users.containsKey(id)) {
+            return Optional.empty();
         }
 
-        return users.get(id);
+        return Optional.of(users.get(id));
     }
 
     private Collection<User> getUsersByIds(Set<Long> usersId) {

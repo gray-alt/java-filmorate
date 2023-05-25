@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController()
 @RequestMapping("/users")
@@ -22,12 +23,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public Optional<User> addUser(@Valid @RequestBody User user) {
         return userService.addUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) throws ValidationException {
+    public Optional<User> updateUser(@RequestBody User user) throws ValidationException {
         return userService.updateUser(user);
     }
 
@@ -37,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) throws ValidationException {
+    public Optional<User> getUser(@PathVariable Long id) throws ValidationException {
         return userService.getUser(id);
     }
 

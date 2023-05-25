@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -27,7 +28,7 @@ public class OtherController {
     }
 
     @GetMapping("/mpa/{id}")
-    public Mpa getMpa(@PathVariable int id) {
+    public Optional<Mpa> getMpa(@PathVariable int id) {
         return filmService.getMpaById(id);
     }
 
@@ -37,7 +38,7 @@ public class OtherController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre getGenre(@PathVariable int id) {
+    public Optional<Genre> getGenre(@PathVariable int id) {
         return filmService.getGenreById(id);
     }
 }
