@@ -56,7 +56,7 @@ public class UserDbStorage implements UserStorage {
                 "login = ?, email = ?, name = ?, birthday = ? " +
                 "where user_id = ?";
 
-        int rowCount =jdbcTemplate.update(sqlQuery,
+        int rowCount = jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
                 user.getEmail(),
                 user.getName(),
@@ -92,7 +92,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(Long userId, Long friendId){
+    public void addFriend(Long userId, Long friendId) {
         String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, 0);
         log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
