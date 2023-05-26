@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.model.User;
@@ -92,6 +93,18 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public boolean userExist(Long id) {
+        String sqlQuery = "select 1 from users where user_id = ? limit 1";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        return result.next();
+    }
+
+    @Override
+    public boolean userNotExist(Long id) {
+        return !userExist(id);
+    }
+
+    @Override
     public void addFriend(Long userId, Long friendId) {
         String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, 0);
@@ -135,12 +148,8 @@ public class UserDbStorage implements UserStorage {
 
     private Optional<User> getUserById(Long id) {
         String sqlQuery = "select * from users where user_id = ?";
-        List<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
-        if (users.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(users.get(0));
+        Collection<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
+        return users.stream().findFirst();
     }
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {

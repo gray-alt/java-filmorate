@@ -24,8 +24,7 @@ public class UserService {
     }
 
     public Optional<User> updateUser(User user) {
-        Optional<User> foundUser = userStorage.getUser(user.getId());
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(user.getId())) {
             throw new NotFoundException("Пользователь с id " + user.getId() + " не найден.");
         }
         return userStorage.updateUser(user);
@@ -33,7 +32,7 @@ public class UserService {
 
     public Optional<User> getUser(Long id) {
         Optional<User> foundUser = userStorage.getUser(id);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(id)) {
             throw new NotFoundException("Пользователь с id " + id + " не найден.");
         }
         return foundUser;
@@ -44,37 +43,30 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        Optional<User> foundUser = userStorage.getUser(userId);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
-        Optional<User> foundFriend = userStorage.getUser(friendId);
-        if (foundFriend.isEmpty()) {
+        if (userStorage.userNotExist(friendId)) {
             throw new NotFoundException("Пользователь с id " + friendId + " не найден.");
         }
-
         userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        Optional<User> foundUser = userStorage.getUser(userId);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
-        Optional<User> foundFriend = userStorage.getUser(friendId);
-        if (foundFriend.isEmpty()) {
+        if (userStorage.userNotExist(friendId)) {
             throw new NotFoundException("Пользователь с id " + friendId + " не найден.");
         }
         userStorage.removeFriend(userId, friendId);
     }
 
     public void confirmFriend(Long userId, Long friendId) {
-        Optional<User> foundUser = userStorage.getUser(userId);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
-        Optional<User> foundFriend = userStorage.getUser(friendId);
-        if (foundFriend.isEmpty()) {
+        if (userStorage.userNotExist(friendId)) {
             throw new NotFoundException("Пользователь с id " + friendId + " не найден.");
         }
         userStorage.confirmFriend(userId, friendId);

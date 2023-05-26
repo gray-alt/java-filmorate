@@ -64,6 +64,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean filmExist(Long id) {
+        return films.containsKey(id);
+    }
+
+    @Override
+    public boolean filmNotExist(Long id) {
+        return !films.containsKey(id);
+    }
+
+    @Override
     public void addLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
         film.get().addLike(userId);

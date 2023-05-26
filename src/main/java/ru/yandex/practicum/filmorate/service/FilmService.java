@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -31,8 +30,7 @@ public class FilmService {
     }
 
     public Optional<Film> updateFilm(Film film) {
-        Optional<Film> foundFilm = filmStorage.getFilm(film.getId());
-        if (foundFilm.isEmpty()) {
+        if (filmStorage.filmNotExist(film.getId())) {
             throw new NotFoundException("Фильм с id " + film.getId() + " не найден.");
         }
         return filmStorage.updateFilm(film);
@@ -51,24 +49,20 @@ public class FilmService {
     }
 
     public void addLike(Long id, Long userId) {
-        Optional<Film> foundFilm = filmStorage.getFilm(id);
-        if (foundFilm.isEmpty()) {
+        if (filmStorage.filmNotExist(id)) {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
-        Optional<User> foundUser = userStorage.getUser(userId);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
         filmStorage.addLike(id, userId);
     }
 
     public void removeLike(Long id, Long userId) {
-        Optional<Film> foundFilm = filmStorage.getFilm(id);
-        if (foundFilm.isEmpty()) {
+        if (filmStorage.filmNotExist(id)) {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
-        Optional<User> foundUser = userStorage.getUser(userId);
-        if (foundUser.isEmpty()) {
+        if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
         filmStorage.removeLike(id, userId);

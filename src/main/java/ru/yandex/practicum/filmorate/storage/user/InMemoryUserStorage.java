@@ -51,6 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .birthday(user.getBirthday())
                 .friends(foundUser.get().getFriends())
                 .build();
+
         log.info("Обновлен пользователь: " + newUser.getName());
         users.put(newUser.getId(), newUser);
         return Optional.of(newUser);
@@ -67,20 +68,30 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public boolean userExist(Long id) {
+        return users.containsKey(id);
+    }
+
+    @Override
+    public boolean userNotExist(Long id) {
+        return !users.containsKey(id);
+    }
+
+    @Override
     public void addFriend(Long userId, Long friendId) throws ValidationException {
-        Optional<User> user = getUserById(userId);
-        Optional<User> friend = getUserById(friendId);
-        user.get().addFriend(friendId);
-        friend.get().addFriend(userId);
+        Optional<User> userOptional = getUserById(userId);
+        Optional<User> friendOptional = getUserById(friendId);
+        userOptional.ifPresent(user -> user.addFriend(friendId));
+        friendOptional.ifPresent(user -> user.addFriend(userId));
         log.info("Пользователю с id " + userId + " добавлен друг с id " + friendId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) throws ValidationException {
-        Optional<User> user = getUserById(userId);
-        Optional<User> friend = getUserById(friendId);
-        user.get().removeFriend(friendId);
-        friend.get().removeFriend(userId);
+        Optional<User> userOptional = getUserById(userId);
+        Optional<User> friendOptional = getUserById(friendId);
+        userOptional.ifPresent(user -> user.removeFriend(friendId));
+        friendOptional.ifPresent(user -> user.removeFriend(userId));
         log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
     }
 
@@ -108,7 +119,6 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(id)) {
             return Optional.empty();
         }
-
         return Optional.of(users.get(id));
     }
 

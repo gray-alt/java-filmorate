@@ -15,6 +15,10 @@ public interface UserStorage {
 
     Collection<User> getUsers();
 
+    boolean userExist(Long id);
+
+    boolean userNotExist(Long id);
+
     void addFriend(Long userId, Long friendId) throws ValidationException;
 
     void removeFriend(Long userId, Long friendId) throws ValidationException;

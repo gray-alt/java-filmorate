@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -121,6 +122,18 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public boolean filmExist(Long id) {
+        String sqlQuery = "select 1 from films where film_id = ? limit 1";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        return result.next();
+    }
+
+    @Override
+    public boolean filmNotExist(Long id) {
+        return !filmExist(id);
+    }
+
+    @Override
     public void addLike(Long id, Long userId) {
         String sqlQuery = "merge into film_likes(film_id, user_id) key(film_id, user_id) values(?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
@@ -171,11 +184,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Mpa> getMpaById(int id) {
         String sqlQuery = "select * from mpa where mpa_id = ?";
-        List<Mpa> mpa = jdbcTemplate.query(sqlQuery, this::mapRowToMpa, id);
-        if (mpa.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(mpa.get(0));
+        Collection<Mpa> mpa = jdbcTemplate.query(sqlQuery, this::mapRowToMpa, id);
+        return mpa.stream().findFirst();
     }
 
     @Override
@@ -187,11 +197,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Genre> getGenreById(int id) {
         String sqlQuery = "select * from genres where genre_id = ?";
-        List<Genre> genres = jdbcTemplate.query(sqlQuery, this::mapRowToGenre, id);
-        if (genres.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(genres.get(0));
+        Collection<Genre> genres = jdbcTemplate.query(sqlQuery, this::mapRowToGenre, id);
+        return genres.stream().findFirst();
     }
 
     private void addGenreToFilm(Long filmId, int genreId) {
@@ -239,11 +246,8 @@ public class FilmDbStorage implements FilmStorage {
                 "   on films.mpa_id = mpa.mpa_id " +
                 "where film_id = ?";
 
-        List<Film> films = jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id);
-        if (films.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(films.get(0));
+        Collection<Film> films = jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id);
+        return films.stream().findFirst();
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
