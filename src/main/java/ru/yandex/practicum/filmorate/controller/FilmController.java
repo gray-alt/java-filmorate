@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController()
 @RequestMapping("/films")
@@ -23,23 +24,23 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
+    public Optional<Film> addFilm(@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film film) throws ValidationException {
+    public Optional<Film> updateFilm(@Valid @RequestBody Film film) throws ValidationException {
         return filmService.updateFilm(film);
+    }
+
+    @GetMapping("/{id}")
+    public Optional<Film> getFilm(@PathVariable Long id) throws ValidationException {
+        return filmService.getFilm(id);
     }
 
     @GetMapping
     public Collection<Film> getFilms() {
         return filmService.getFilms();
-    }
-
-    @GetMapping("/{id}")
-    public Film getFilm(@PathVariable Long id) throws ValidationException {
-        return filmService.getFilm(id);
     }
 
     @PutMapping("/{id}/like/{userId}")

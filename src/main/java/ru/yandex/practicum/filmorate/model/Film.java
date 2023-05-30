@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Builder;
@@ -24,7 +26,9 @@ public class Film {
     @NotNull
     @Positive(message = "Продолжительность фильма должна быть положительной.")
     private final int duration;
+    private final Mpa mpa;
     private final Set<Long> likes;
+    private final Set<Genre> genres;
 
     public void addLike(Long userId) {
         likes.add(userId);
@@ -32,5 +36,19 @@ public class Film {
 
     public void removeLike(Long userId) {
         likes.removeIf(p -> p.equals(userId));
+    }
+
+    public Integer getMpaId() {
+        return (mpa == null ? null : mpa.getId());
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("name", name);
+        values.put("description", description);
+        values.put("release_date", releaseDate);
+        values.put("duration", duration);
+        values.put("mpa_id", getMpaId());
+        return values;
     }
 }
