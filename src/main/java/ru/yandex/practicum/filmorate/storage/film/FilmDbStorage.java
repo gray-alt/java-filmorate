@@ -204,9 +204,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteFilmById(Long id) {
-        if (filmNotExist(id)) {
-            throw new NotFoundException("Нет фильма с таким id");
-        }
         jdbcTemplate.update("delete from films where film_id = ?", id);
     }
 

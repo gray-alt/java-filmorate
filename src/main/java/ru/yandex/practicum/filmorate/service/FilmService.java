@@ -97,6 +97,9 @@ public class FilmService {
     }
 
     public void deleteFilmById(Long id) {
+        if (filmStorage.filmNotExist(id)) {
+            throw new NotFoundException("Нет фильма с таким id");
+        }
         filmStorage.deleteFilmById(id);
     }
 }

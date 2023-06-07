@@ -81,6 +81,9 @@ public class UserService {
     }
 
     public void deleteUserById(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
         userStorage.deleteUserById(id);
     }
 }
