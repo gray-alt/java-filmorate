@@ -33,7 +33,7 @@ public class ReviewDbStorage implements ReviewStorage {
         Review newReview = Review.builder()
                 .id(reviewId)
                 .content(review.getContent())
-                .isPositive(review.isPositive())
+                .positive(review.getPositive())
                 .userId(review.getUserId())
                 .filmId(review.getFilmId())
                 .useful(0)
@@ -52,24 +52,21 @@ public class ReviewDbStorage implements ReviewStorage {
 
         int rowCount = jdbcTemplate.update(sqlQuery,
                 review.getContent(),
-                review.isPositive(),
+                review.getPositive(),
                 review.getId());
 
         if (rowCount == 0) {
             return Optional.empty();
         }
 
-        Review newReview = Review.builder()
-                .id(review.getId())
-                .content(review.getContent())
-                .isPositive(review.isPositive())
-                .userId(review.getUserId())
-                .filmId(review.getFilmId())
-                .useful(review.getUseful())
-                .build();
+        Optional<Review> newReview = getReview(review.getId());
 
-        log.info("Обновлен отзыв к фильму с id: " + newReview.getFilmId());
-        return Optional.of(newReview);
+        if (newReview.isEmpty()) {
+            return newReview;
+        }
+
+        log.info("Обновлен отзыв к фильму с id: " + newReview.get().getFilmId());
+        return newReview;
     }
 
     @Override
@@ -88,7 +85,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "   reviews.positive, " +
                 "   reviews.user_id, " +
                 "   reviews.film_id, " +
-                "   SUM(review_useful.score) " +
+                "   SUM(review_useful.score) as useful " +
                 "from reviews " +
                 "   left join review_useful " +
                 "   on reviews.review_id = review_useful.review_id " +
@@ -108,14 +105,15 @@ public class ReviewDbStorage implements ReviewStorage {
                 "   reviews.positive, " +
                 "   reviews.user_id, " +
                 "   reviews.film_id, " +
-                "   SUM(review_useful.score) as useful " +
+                "   SUM(IFNULL(review_useful.score, 0)) as useful " +
                 "from reviews " +
                 "   left join review_useful " +
                 "   on reviews.review_id = review_useful.review_id " +
                 "where ? is NULL or reviews.film_id = ? " +
-                "group by reviews.review_id";
+                "group by reviews.review_id " +
+                "order by SUM(IFNULL(review_useful.score, 0)) desc";
 
-        return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count, filmId, filmId);
     }
 
     @Override
@@ -134,21 +132,21 @@ public class ReviewDbStorage implements ReviewStorage {
     public void addLikeDislike(Long id, Long userId, boolean isLike) {
         String sqlQuery = "merge into review_useful(review_id, user_id, score) key(review_id, user_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId, isLike ? 1 : -1);
-        log.info("Обзору с id " + id + " поставил лайк/дизлайк пользователь с id " + userId);
+        log.info("Обзору с id " + id + " поставил " + (isLike ? "лайк" : "дизлайк") + " пользователь с id " + userId);
     }
 
     @Override
     public void deleteLikeDislike(Long id, Long userId, boolean isLike) {
         String sqlQuery = "delete from review_useful where review_id = ? and user_id = ? and score = ?";
         jdbcTemplate.update(sqlQuery, id, userId, isLike ? 1 : -1);
-        log.info("У обзора с id " + id + " удален лайк/дизлайк пользователя с id " + userId);
+        log.info("У обзора с id " + id + " удален " + (isLike ? "лайк" : "дизлайк") + " пользователя с id " + userId);
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         return Review.builder()
                 .id(resultSet.getLong("review_id"))
                 .content(resultSet.getString("content"))
-                .isPositive(resultSet.getBoolean("positive"))
+                .positive(resultSet.getBoolean("positive"))
                 .userId(resultSet.getLong("user_id"))
                 .filmId(resultSet.getLong("film_id"))
                 .useful(resultSet.getInt("useful"))
