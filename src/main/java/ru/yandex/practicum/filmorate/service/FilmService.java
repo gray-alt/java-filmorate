@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -102,10 +103,48 @@ public class FilmService {
         if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
             throw new ValidationException("Некорректный запрос. Можно искать только по режиссёру и/или названию фильма.");
         }
-        Collection<Film> films = filmStorage.searchFilms(query, by);
-        if (films.isEmpty()) {
-            throw new NotFoundException("Фильмов по данному запросу не найдено");
+        return filmStorage.searchFilms(query, by);
+    }
+
+    public Optional<Director> addDirector(Director director) {
+        return filmStorage.addDirector(director);
+    }
+
+    public Optional<Director> updateDirector(Director director) {
+        Optional<Director> directorForUpdate = filmStorage.getDirector(director.getId());
+        if (directorForUpdate.isEmpty()) {
+            throw new NotFoundException("Режиссёра с id " + director.getId() + " не существует.");
         }
-        return films;
+        return filmStorage.updateDirector(director);
+    }
+
+    public Collection<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Optional<Director> getDirector(Long id) {
+        Optional<Director> director = filmStorage.getDirector(id);
+        if (director.isEmpty()) {
+            throw new NotFoundException("Режиссёра с id " + id + " не существует.");
+        }
+        return director;
+    }
+
+    public void removeDirector(Long id) {
+        Optional<Director> director = filmStorage.getDirector(id);
+        if (director.isEmpty()) {
+            throw new NotFoundException("Режиссёра с id " + id + " не существует.");
+        }
+        filmStorage.removeDirector(id);
+    }
+
+    public Collection<Film> getDirectorFilms(Long directorId, String sort) {
+        if (filmStorage.directorNotExist(directorId)) {
+            throw new NotFoundException("Фильм с id " + directorId + " не найден.");
+        }
+        if (!(sort.equals("year") || sort.equals("likes"))) {
+            throw new ValidationException("Не верно введённый параметр сортировки : " + sort);
+        }
+        return filmStorage.getDirectorFilms(directorId, sort);
     }
 }

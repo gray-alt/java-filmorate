@@ -29,6 +29,7 @@ public class Film {
     private final Mpa mpa;
     private final Set<Long> likes;
     private final Set<Genre> genres;
+    private final Set<Director> directors;
 
     public void addLike(Long userId) {
         likes.add(userId);
