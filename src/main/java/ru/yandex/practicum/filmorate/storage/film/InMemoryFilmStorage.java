@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -19,7 +20,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new ConcurrentHashMap<>();
+    private final Map<Long, Director> directors = new ConcurrentHashMap<>();
     private long lastId = 0;
+    private long directorId = 0;
 
     @Override
     public Optional<Film> addFilm(Film film) {
@@ -123,5 +126,57 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
 
         return Optional.of(films.get(id));
+    }
+
+    @Override
+    public Optional<Director> addDirector(Director director) {
+        Director newDirector = Director.builder().id(++directorId).name(director.getName()).build();
+        directors.put(newDirector.getId(), newDirector);
+        return Optional.of(newDirector);
+    }
+
+    @Override
+    public Optional<Director> updateDirector(Director director) {
+        directors.replace(director.getId(), director);
+        return Optional.of(director);
+    }
+
+    @Override
+    public boolean directorExist(Long id) {
+        return directors.containsKey(id);
+    }
+
+    @Override
+    public boolean directorNotExist(Long id) {
+        return !directors.containsKey(id);
+    }
+
+    @Override
+    public Collection<Director> getAllDirectors() {
+        return directors.values();
+    }
+
+    @Override
+    public Optional<Director> getDirector(Long id) {
+        return Optional.of(directors.get(id));
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Long directorId, String sort) {
+        if (sort.equals("year")) {
+            return films.values().stream()
+                    .sorted((f0, f1) -> f1.getReleaseDate().getYear() - f0.getReleaseDate().getYear())
+                    .collect(Collectors.toList());
+        } else {
+            return films.values().stream()
+                    .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void removeDirector(Long id) {
+        directors.remove(id);
+        log.info("Режиссёр с id " + id + " удалён.");
     }
 }

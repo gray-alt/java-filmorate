@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -11,7 +12,7 @@ import java.util.Optional;
 public interface FilmStorage {
     Optional<Film> addFilm(Film film);
 
-    Optional<Film> updateFilm(Film film)  throws ValidationException;
+    Optional<Film> updateFilm(Film film) throws ValidationException;
 
     Optional<Film> getFilm(Long id) throws ValidationException;
 
@@ -34,4 +35,20 @@ public interface FilmStorage {
     Collection<Genre> getAllGenres();
 
     Optional<Genre> getGenreById(int id);
+
+    Optional<Director> addDirector(Director director);
+
+    Optional<Director> updateDirector(Director director);
+
+    boolean directorExist(Long id);
+
+    boolean directorNotExist(Long id);
+
+    Collection<Director> getAllDirectors();
+
+    Optional<Director> getDirector(Long id);
+
+    Collection<Film> getDirectorFilms(Long directorId, String sort);
+
+    void removeDirector(Long id);
 }
