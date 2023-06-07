@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -94,5 +96,16 @@ public class FilmService {
             throw new NotFoundException("Жанра с id " + id + " не существует.");
         }
         return genre;
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
+            throw new ValidationException("Некорректный запрос. Можно искать только по режиссёру и/или названию фильма.");
+        }
+        Collection<Film> films = filmStorage.searchFilms(query, by);
+        if (films.isEmpty()) {
+            throw new NotFoundException("Фильмов по данному запросу не найдено");
+        }
+        return films;
     }
 }

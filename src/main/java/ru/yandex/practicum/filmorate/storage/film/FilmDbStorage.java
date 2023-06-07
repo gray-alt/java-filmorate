@@ -121,6 +121,45 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        String sqlQuery = "select " +
+                "   films.film_id, " +
+                "   films.name, " +
+                "   films.description, " +
+                "   films.release_date, " +
+                "   films.duration, " +
+                "   films.mpa_id, " +
+                "   films.director_id, " +
+                "   directors.name as director_name, " +
+                "   mpa.name as mpa_name, " +
+                "   mpa.description as mpa_description " +
+                "from films " +
+                "   left join mpa " +
+                "   on films.mpa_id = mpa.mpa_id" +
+                "   left join directors " +
+                "   on films.director_id = directors.director_id";
+        if (by.contains("director")) {
+            sqlQuery = sqlQuery + " where films.director_name like '%" + query + "%'";
+            if (by.contains("title")) {
+                sqlQuery = sqlQuery + " and films.name like '%" + query + "%'";
+            }
+        } else {
+            if (by.contains("title")) {
+                sqlQuery = sqlQuery + " where films.name like '%" + query + "%'";
+            }
+        }
+        sqlQuery = sqlQuery + " where film_id in (" +
+                "   select top ? " +
+                "       films.film_id " +
+                "   from films " +
+                "       left join film_likes " +
+                "       on films.film_id = film_likes.film_id " +
+                "   group by films.film_id " +
+                "   order by count(film_likes.user_id) desc" +
+                ")";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
+    }
+
     @Override
     public boolean filmExist(Long id) {
         String sqlQuery = "select 1 from films where film_id = ? limit 1";
