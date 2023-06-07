@@ -115,6 +115,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         return Optional.empty();
     }
 
+    @Override
+    public void deleteFilmById(Long id) {
+
+    }
+
+
     private Optional<Film> getFilmById(Long id) throws ValidationException {
         if (id == null) {
             throw new ValidationException("Не передан id фильма.");

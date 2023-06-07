@@ -111,6 +111,10 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUserById(Long Id) {
+    }
+
+    @Override
     public void confirmFriend(Long id, Long friendId) throws ValidationException {
 
     }

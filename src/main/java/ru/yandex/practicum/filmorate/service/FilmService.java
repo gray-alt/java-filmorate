@@ -95,4 +95,8 @@ public class FilmService {
         }
         return genre;
     }
+
+    public void deleteFilmById(Long id) {
+        filmStorage.deleteFilmById(id);
+    }
 }

@@ -1,11 +1,14 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -54,8 +57,8 @@ public class UserDbStorage implements UserStorage {
     public Optional<User> updateUser(User user) {
         String sqlQuery =
                 "update users set " +
-                "login = ?, email = ?, name = ?, birthday = ? " +
-                "where user_id = ?";
+                        "login = ?, email = ?, name = ?, birthday = ? " +
+                        "where user_id = ?";
 
         int rowCount = jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
@@ -131,6 +134,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(Long id) {
+        if (userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
         String sqlQuery = "select * from users where user_id in (select friend_id from friends where user_id = ?)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
@@ -138,17 +144,25 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         String sqlQuery = "select * from users where user_id in (" +
-                    "select friends.friend_id from friends as friends " +
-                    "inner join friends as other_friends " +
-                    "on friends.friend_id = other_friends.friend_id "  +
-                    "where  friends.user_id = ? and other_friends.user_id = ?" +
+                "select friends.friend_id from friends as friends " +
+                "inner join friends as other_friends " +
+                "on friends.friend_id = other_friends.friend_id " +
+                "where  friends.user_id = ? and other_friends.user_id = ?" +
                 ")";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 
+    @Override
+    public void deleteUserById(Long id) {
+        if (userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
+        jdbcTemplate.update("delete from users where user_id = ?", id);
+    }
+
     private Optional<User> getUserById(Long id) {
         String sqlQuery = "select * from users where user_id = ?";
-        Collection<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
+        Collection<User> users = jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
         return users.stream().findFirst();
     }
 

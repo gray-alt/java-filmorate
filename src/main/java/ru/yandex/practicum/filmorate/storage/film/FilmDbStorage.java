@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -61,8 +62,8 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> updateFilm(Film film) {
         String sqlQuery =
                 "update films set " +
-                "name = ?, description = ?, duration = ?, release_date = ?, mpa_id = ? " +
-                "where film_id = ?";
+                        "name = ?, description = ?, duration = ?, release_date = ?, mpa_id = ? " +
+                        "where film_id = ?";
 
         int rowCount = jdbcTemplate.update(sqlQuery,
                 film.getName(),
@@ -107,17 +108,17 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getFilms() {
         String sqlQuery =
                 "select " +
-                "   films.film_id, " +
-                "   films.name, " +
-                "   films.description, " +
-                "   films.release_date, " +
-                "   films.duration, " +
-                "   films.mpa_id, " +
-                "   mpa.name as mpa_name, " +
-                "   mpa.description as mpa_description " +
-                "from films " +
-                "   left join mpa " +
-                "   on films.mpa_id = mpa.mpa_id";
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
@@ -151,26 +152,26 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getPopularFilms(Integer count) {
         String sqlQuery =
                 "select " +
-                "   films.film_id, " +
-                "   films.name, " +
-                "   films.description, " +
-                "   films.release_date, " +
-                "   films.duration, " +
-                "   films.mpa_id, " +
-                "   mpa.name as mpa_name, " +
-                "   mpa.description as mpa_description " +
-                "from films " +
-                "   left join mpa " +
-                "   on films.mpa_id = mpa.mpa_id " +
-                "where film_id in (" +
-                "   select top ? " +
-                "       films.film_id " +
-                "   from films " +
-                "       left join film_likes " +
-                "       on films.film_id = film_likes.film_id " +
-                "   group by films.film_id " +
-                "   order by count(film_likes.user_id) desc" +
-                ")";
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id " +
+                        "where film_id in (" +
+                        "   select top ? " +
+                        "       films.film_id " +
+                        "   from films " +
+                        "       left join film_likes " +
+                        "       on films.film_id = film_likes.film_id " +
+                        "   group by films.film_id " +
+                        "   order by count(film_likes.user_id) desc" +
+                        ")";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
     }
@@ -201,6 +202,14 @@ public class FilmDbStorage implements FilmStorage {
         return genres.stream().findFirst();
     }
 
+    @Override
+    public void deleteFilmById(Long id) {
+        if (filmNotExist(id)) {
+            throw new NotFoundException("Нет фильма с таким id");
+        }
+        jdbcTemplate.update("delete from films where film_id = ?", id);
+    }
+
     private void addGenreToFilm(Long filmId, int genreId) {
         String sqlQuery = "merge into film_genres(film_id, genre_id) key(film_id, genre_id) values(?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, genreId);
@@ -209,13 +218,13 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Genre> getFilmGenres(Long id) {
         String sqlQuery =
                 "select " +
-                "   film_genres.genre_id, " +
-                "   genres.name " +
-                "from film_genres " +
-                "   left join genres " +
-                "   on film_genres.genre_id = genres.genre_id " +
-                "where film_genres.film_id = ? " +
-                "order by film_genres.genre_id";
+                        "   film_genres.genre_id, " +
+                        "   genres.name " +
+                        "from film_genres " +
+                        "   left join genres " +
+                        "   on film_genres.genre_id = genres.genre_id " +
+                        "where film_genres.film_id = ? " +
+                        "order by film_genres.genre_id";
 
         return new HashSet<>(jdbcTemplate.query(sqlQuery, this::mapRowToGenre, id));
     }
@@ -223,9 +232,9 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Long> getFilmLikes(Long id) {
         String sqlQuery =
                 "select " +
-                "   film_likes.user_id " +
-                "from film_likes " +
-                "where film_likes.film_id = ?";
+                        "   film_likes.user_id " +
+                        "from film_likes " +
+                        "where film_likes.film_id = ?";
 
         return new HashSet<>(jdbcTemplate.queryForList(sqlQuery, Long.class, id));
     }
@@ -233,18 +242,18 @@ public class FilmDbStorage implements FilmStorage {
     private Optional<Film> getFilmById(Long id) {
         String sqlQuery =
                 "select " +
-                "   films.film_id, " +
-                "   films.name, " +
-                "   films.description, " +
-                "   films.release_date, " +
-                "   films.duration, " +
-                "   films.mpa_id, " +
-                "   mpa.name as mpa_name, " +
-                "   mpa.description as mpa_description " +
-                "from films " +
-                "   left join mpa " +
-                "   on films.mpa_id = mpa.mpa_id " +
-                "where film_id = ?";
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id " +
+                        "where film_id = ?";
 
         Collection<Film> films = jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id);
         return films.stream().findFirst();

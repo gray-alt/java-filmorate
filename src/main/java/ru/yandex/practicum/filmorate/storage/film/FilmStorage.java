@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface FilmStorage {
     Optional<Film> addFilm(Film film);
 
-    Optional<Film> updateFilm(Film film)  throws ValidationException;
+    Optional<Film> updateFilm(Film film) throws ValidationException;
 
     Optional<Film> getFilm(Long id) throws ValidationException;
 
@@ -34,4 +34,6 @@ public interface FilmStorage {
     Collection<Genre> getAllGenres();
 
     Optional<Genre> getGenreById(int id);
+
+    void deleteFilmById(Long id);
 }
