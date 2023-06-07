@@ -129,15 +129,17 @@ public class FilmDbStorage implements FilmStorage {
                 "   films.release_date, " +
                 "   films.duration, " +
                 "   films.mpa_id, " +
-                "   films.director_id, " +
+                "   film_directors.director_id as director_id " +
                 "   directors.name as director_name, " +
                 "   mpa.name as mpa_name, " +
                 "   mpa.description as mpa_description " +
                 "from films " +
                 "   left join mpa " +
                 "   on films.mpa_id = mpa.mpa_id" +
+                "   left join film_directors " +
+                "   on films.film_id = film_directors.film_id" +
                 "   left join directors " +
-                "   on films.director_id = directors.director_id";
+                "   on film_directors.director_id = directors.director_id";
         if (by.contains("director")) {
             sqlQuery = sqlQuery + " where films.director_name like '%" + query + "%'";
             if (by.contains("title")) {
@@ -301,6 +303,13 @@ public class FilmDbStorage implements FilmStorage {
                         resultSet.getString("mpa_description")))
                 .genres(getFilmGenres(resultSet.getLong("film_id")))
                 .likes(getFilmLikes(resultSet.getLong("film_id")))
+                .build();
+    }
+
+    private Director mapRowToDirector(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(resultSet.getLong("director_id"))
+                .name(resultSet.getString("name"))
                 .build();
     }
 
