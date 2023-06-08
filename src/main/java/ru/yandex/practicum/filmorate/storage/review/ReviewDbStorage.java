@@ -132,14 +132,14 @@ public class ReviewDbStorage implements ReviewStorage {
     public void addLikeDislike(Long id, Long userId, boolean isLike) {
         String sqlQuery = "merge into review_useful(review_id, user_id, score) key(review_id, user_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId, isLike ? 1 : -1);
-        log.info("Обзору с id " + id + " поставил " + (isLike ? "лайк" : "дизлайк") + " пользователь с id " + userId);
+        log.info("Отзыву с id " + id + " поставил " + (isLike ? "лайк" : "дизлайк") + " пользователь с id " + userId);
     }
 
     @Override
     public void deleteLikeDislike(Long id, Long userId, boolean isLike) {
         String sqlQuery = "delete from review_useful where review_id = ? and user_id = ? and score = ?";
         jdbcTemplate.update(sqlQuery, id, userId, isLike ? 1 : -1);
-        log.info("У обзора с id " + id + " удален " + (isLike ? "лайк" : "дизлайк") + " пользователя с id " + userId);
+        log.info("У отзыва с id " + id + " удален " + (isLike ? "лайк" : "дизлайк") + " пользователя с id " + userId);
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
