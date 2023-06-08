@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS genres (
 );
 
 CREATE TABLE IF NOT EXISTS film_genres (
-	film_id BIGINT REFERENCES films (film_id),
+	film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
 	genre_id INTEGER REFERENCES genres (genre_id),
 	CONSTRAINT PK_FILM_GENRES PRIMARY KEY (film_id,genre_id)
 );
@@ -52,20 +52,20 @@ CREATE TABLE IF NOT EXISTS directors (
 );
 
 CREATE TABLE IF NOT EXISTS film_directors (
-    film_id BIGINT REFERENCES films (film_id),
-    director_id BIGINT REFERENCES directors (director_id),
+    film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
+    director_id BIGINT REFERENCES directors (director_id) ON DELETE CASCADE,
     CONSTRAINT PK_FILM_DIRECTORS PRIMARY KEY (film_id,director_id)
 );
 
 CREATE TABLE IF NOT EXISTS film_likes (
-	film_id BIGINT REFERENCES films (film_id),
-	user_id BIGINT REFERENCES users (user_id),
+	film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
+	user_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
 	CONSTRAINT PK_FILM_LIKES PRIMARY KEY (film_id,user_id)
 );
 
 CREATE TABLE IF NOT EXISTS friends (
-	user_id BIGINT REFERENCES users (user_id),
-	friend_id BIGINT REFERENCES users (user_id),
+	user_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
+	friend_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
 	status BOOLEAN,
 	CONSTRAINT PK_FRIENDS PRIMARY KEY (user_id,friend_id)
 );

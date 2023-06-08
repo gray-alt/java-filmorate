@@ -101,6 +101,8 @@ public class FilmDbStorage implements FilmStorage {
         Set<Director> directors = film.getDirectors();
         if (directors != null) {
             directors.forEach(director -> addDirectorToFilm(film.getId(), director.getId()));
+        } else {
+            directors = new HashSet<>();
         }
 
         Film newFilm = Film.builder()
@@ -418,9 +420,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void removeDirector(Long id) {
-        String sqlQuery1 = "delete from film_directors where director_id = ?";
-        jdbcTemplate.update(sqlQuery1, id);
-
         String sqlQuery = "delete from directors where director_id = ?";
         jdbcTemplate.update(sqlQuery, id);
 
