@@ -12,7 +12,7 @@ create TABLE IF NOT EXISTS films
     description  TEXT,
     release_date DATE,
     duration     INTEGER,
-    mpa_id       INTEGER REFERENCES mpa (mpa_id)  ON delete CASCADE ON update CASCADE
+    mpa_id       INTEGER REFERENCES mpa (mpa_id)  ON delete CASCADE
 );
 
 create TABLE IF NOT EXISTS users
@@ -32,28 +32,22 @@ create TABLE IF NOT EXISTS genres
 
 create TABLE IF NOT EXISTS film_genres
 (
-    film_id  BIGINT REFERENCES films (film_id)
-        ON delete CASCADE ON update CASCADE ,
-    genre_id INTEGER REFERENCES genres (genre_id)
-        ON delete CASCADE ON update CASCADE ,
+    film_id  BIGINT REFERENCES films (film_id) ON delete CASCADE ,
+    genre_id INTEGER REFERENCES genres (genre_id) ON delete CASCADE,
     CONSTRAINT PK_FILM_GENRES PRIMARY KEY (film_id, genre_id)
 );
 
 create TABLE IF NOT EXISTS film_likes
 (
-    film_id BIGINT REFERENCES films (film_id)
-        ON delete CASCADE ON update CASCADE ,
-    user_id BIGINT REFERENCES users (user_id)
-        ON delete CASCADE ON update CASCADE ,
+    film_id BIGINT REFERENCES films (film_id) ON delete CASCADE,
+    user_id BIGINT REFERENCES users (user_id) ON delete CASCADE,
     CONSTRAINT PK_FILM_LIKES PRIMARY KEY (film_id, user_id)
 );
 
 create TABLE IF NOT EXISTS friends
 (
-    user_id   BIGINT REFERENCES users (user_id)
-        ON delete CASCADE ON update CASCADE,
-    friend_id BIGINT REFERENCES users (user_id)
-        ON delete CASCADE ON update CASCADE,
+    user_id   BIGINT REFERENCES users (user_id) ON delete CASCADE,
+    friend_id BIGINT REFERENCES users (user_id) ON delete CASCADE,
     status    BOOLEAN,
     CONSTRAINT PK_FRIENDS PRIMARY KEY (user_id, friend_id)
 );
