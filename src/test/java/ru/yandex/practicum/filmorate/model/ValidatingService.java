@@ -29,4 +29,11 @@ public class ValidatingService {
             throw new ValidationException("Ошибка валидации");
         }
     }
+
+    public void validateSimpleReview(Review review) throws ValidationException {
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+        if (!violations.isEmpty()) {
+            throw new ValidationException("Ошибка валидации");
+        }
+    }
 }
