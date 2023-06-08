@@ -67,4 +67,9 @@ public class UserController {
                                              @PathVariable Long otherId) throws ValidationException {
         return userService.getCommonFriends(id, otherId);
     }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable long userId) {
+        userService.deleteUserById(userId);
+    }
 }

@@ -73,10 +73,20 @@ public class UserService {
     }
 
     public Collection<User> getFriends(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
         return userStorage.getFriends(id);
     }
 
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         return userStorage.getCommonFriends(id, otherId);
+    }
+
+    public void deleteUserById(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
+        userStorage.deleteUserById(id);
     }
 }

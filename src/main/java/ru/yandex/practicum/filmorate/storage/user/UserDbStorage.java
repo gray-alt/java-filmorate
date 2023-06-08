@@ -54,8 +54,8 @@ public class UserDbStorage implements UserStorage {
     public Optional<User> updateUser(User user) {
         String sqlQuery =
                 "update users set " +
-                "login = ?, email = ?, name = ?, birthday = ? " +
-                "where user_id = ?";
+                        "login = ?, email = ?, name = ?, birthday = ? " +
+                        "where user_id = ?";
 
         int rowCount = jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
@@ -138,17 +138,22 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         String sqlQuery = "select * from users where user_id in (" +
-                    "select friends.friend_id from friends as friends " +
-                    "inner join friends as other_friends " +
-                    "on friends.friend_id = other_friends.friend_id "  +
-                    "where  friends.user_id = ? and other_friends.user_id = ?" +
+                "select friends.friend_id from friends as friends " +
+                "inner join friends as other_friends " +
+                "on friends.friend_id = other_friends.friend_id " +
+                "where  friends.user_id = ? and other_friends.user_id = ?" +
                 ")";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 
+    @Override
+    public void deleteUserById(Long id) {
+        jdbcTemplate.update("delete from users where user_id = ?", id);
+    }
+
     private Optional<User> getUserById(Long id) {
         String sqlQuery = "select * from users where user_id = ?";
-        Collection<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
+        Collection<User> users = jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
         return users.stream().findFirst();
     }
 

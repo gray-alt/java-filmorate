@@ -224,6 +224,11 @@ public class FilmDbStorage implements FilmStorage {
         return genres.stream().findFirst();
     }
 
+    @Override
+    public void deleteFilmById(Long id) {
+        jdbcTemplate.update("delete from films where film_id = ?", id);
+    }
+
     private void addGenreToFilm(Long filmId, int genreId) {
         String sqlQuery = "merge into film_genres(film_id, genre_id) key(film_id, genre_id) values(?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, genreId);

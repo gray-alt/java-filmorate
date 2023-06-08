@@ -139,4 +139,11 @@ public class FilmService {
         }
         return filmStorage.getDirectorFilms(directorId, sort);
     }
+
+    public void deleteFilmById(Long id) {
+        if (filmStorage.filmNotExist(id)) {
+            throw new NotFoundException("Нет фильма с таким id");
+        }
+        filmStorage.deleteFilmById(id);
+    }
 }
