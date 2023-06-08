@@ -73,6 +73,9 @@ public class UserService {
     }
 
     public Collection<User> getFriends(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
         return userStorage.getFriends(id);
     }
 

@@ -132,9 +132,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(Long id) {
-        if (userNotExist(id)) {
-            throw new NotFoundException("Нет такого пользователя");
-        }
         String sqlQuery = "select * from users where user_id in (select friend_id from friends where user_id = ?)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
