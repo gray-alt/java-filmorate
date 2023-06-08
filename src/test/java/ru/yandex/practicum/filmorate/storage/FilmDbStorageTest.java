@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
@@ -45,11 +42,19 @@ public class FilmDbStorageTest {
         genres.add(new Genre(1, ""));
         genres.add(new Genre(2, ""));
 
+        filmStorage.addDirector(Director.builder().name("Director1").build());
+        filmStorage.addDirector(Director.builder().name("Director2").build());
+
+        Set<Director> directors = new HashSet<>();
+        directors.add(Director.builder().id(1L).name("Director1").build());
+        directors.add(Director.builder().id(2L).name("Director2").build());
+
         Film newFilm = Film.builder()
                 .name("Film name")
                 .description("Film description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .genres(genres)
+                .directors(directors)
                 .duration(60)
                 .build();
 
@@ -78,10 +83,20 @@ public class FilmDbStorageTest {
         assertThat(newFilm.getGenres())
                 .size()
                 .isEqualTo(0);
+        assertThat(newFilm.getDirectors())
+                .size()
+                .isEqualTo(0);
 
         Set<Genre> genres = new HashSet<>();
         genres.add(new Genre(1, ""));
         genres.add(new Genre(2, ""));
+
+        filmStorage.addDirector(Director.builder().name("Director1").build());
+        filmStorage.addDirector(Director.builder().name("Director2").build());
+
+        Set<Director> directors = new HashSet<>();
+        directors.add(Director.builder().id(1L).name("Director1").build());
+        directors.add(Director.builder().id(2L).name("Director2").build());
 
         Film filmForUpdate = Film.builder()
                 .id(optionalFilm.get().getId())
@@ -91,6 +106,7 @@ public class FilmDbStorageTest {
                 .duration(newFilm.getDuration())
                 .mpa(newFilm.getMpa())
                 .genres(genres)
+                .directors(directors)
                 .build();
 
         optionalFilm = filmStorage.updateFilm(filmForUpdate);
@@ -101,6 +117,10 @@ public class FilmDbStorageTest {
         newFilm = optionalFilm.get();
 
         assertThat(newFilm.getGenres())
+                .size()
+                .isEqualTo(2);
+
+        assertThat(newFilm.getDirectors())
                 .size()
                 .isEqualTo(2);
     }
@@ -142,6 +162,129 @@ public class FilmDbStorageTest {
                 .hasValueSatisfying(user ->
                         assertThat(user).hasFieldOrPropertyWithValue("id", optionalFilm.get().getId())
                 );
+    }
+
+    @Test
+    public void testAddDirector() {
+        Director director = Director.builder().name("Director").build();
+
+        Optional<Director> optionalDirector = filmStorage.addDirector(director);
+
+        assertThat(optionalDirector).isPresent();
+        assertThat(optionalDirector.get().getId() == 1L);
+        assertThat(optionalDirector.get().getName().equals("Director"));
+    }
+
+    @Test
+    public void testUpdateDirector() {
+        Director directorForUpdate = Director.builder().name("Director").build();
+        filmStorage.addDirector(directorForUpdate);
+
+        Director director = Director.builder().id(1L).name("UpdatedDirector").build();
+        Optional<Director> optionalUpdatedDirector = filmStorage.updateDirector(director);
+
+        assertThat(optionalUpdatedDirector.isPresent());
+        assertThat(optionalUpdatedDirector.get().getId() == 1L);
+        assertThat(optionalUpdatedDirector.get().getName().equals("UpdatedDirector"));
+    }
+
+    @Test
+    public void testRemoveDirector() {
+        Director director = Director.builder().name("Director").build();
+        Optional<Director> newDirector = filmStorage.addDirector(director);
+
+        filmStorage.removeDirector(newDirector.get().getId());
+
+        Optional<Director> optionalDirector = filmStorage.getDirector(newDirector.get().getId());
+        assertThat(optionalDirector.isEmpty());
+    }
+
+    @Test
+    public void testGetAllDirectors() {
+        Director director1 = Director.builder().name("Director1").build();
+        Optional<Director> newDirector1 = filmStorage.addDirector(director1);
+
+        Director director2 = Director.builder().name("Director2").build();
+        Optional<Director> newDirector2 = filmStorage.addDirector(director2);
+
+        Collection<Director> directors = filmStorage.getAllDirectors();
+        assertThat(!directors.isEmpty());
+        assertThat(directors.contains(newDirector1.get()));
+        assertThat(directors.contains(newDirector2.get()));
+    }
+
+    @Test
+    public void testGetDirectorById() {
+        Director director = Director.builder().name("Director1").build();
+        Optional<Director> newDirector = filmStorage.addDirector(director);
+
+        Optional<Director> foundDirector = filmStorage.getDirector(1L);
+
+        assertThat(foundDirector.isPresent());
+        assertThat(foundDirector.get().getName().equals(newDirector.get().getName()));
+    }
+
+    @Test
+    public void testGetDirectorFilms() {
+        Director director = Director.builder().id(1L).name("Director").build();
+        filmStorage.addDirector(director);
+
+        Set<Director> directors = new HashSet<>();
+        directors.add(Director.builder().id(1L).name("Director").build());
+
+        Film newFilm = Film.builder()
+                .name("Film name")
+                .description("Film description")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(60)
+                .directors(directors)
+                .build();
+
+        Optional<Film> optionalFilm = filmStorage.addFilm(newFilm);
+
+        Film newFilm2 = Film.builder()
+                .name("Film2 name")
+                .description("Film2 description")
+                .releaseDate(LocalDate.of(1999, 1, 1))
+                .duration(60)
+                .directors(directors)
+                .build();
+
+        Optional<Film> optionalFilm2 = filmStorage.addFilm(newFilm2);
+
+        Collection<Film> films = filmStorage.getDirectorFilms(1L, "year");
+        assertThat(films.size() == 2);
+        assertThat(films.contains(optionalFilm.get()));
+        assertThat(films.contains(optionalFilm2.get()));
+        assertThat(films.stream().findFirst().equals(optionalFilm2));
+
+        User newUser = User.builder()
+                .login("NewUser")
+                .email("user email")
+                .name("New user")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        Optional<User> optionalUser = userStorage.addUser(newUser);
+
+        User newUser2 = User.builder()
+                .login("NewUser2")
+                .email("user2 email")
+                .name("New user2")
+                .birthday(LocalDate.of(2002, 1, 1))
+                .build();
+
+        Optional<User> optionalUser2 = userStorage.addUser(newUser2);
+
+        filmStorage.addLike(optionalFilm.get().getId(), optionalUser.get().getId());
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser.get().getId());
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId());
+
+        Collection<Film> filmsSortedByLikes = filmStorage.getDirectorFilms(1L, "likes");
+        assertThat(filmsSortedByLikes.size() == 2);
+        assertThat(filmsSortedByLikes.contains(optionalFilm.get()));
+        assertThat(filmsSortedByLikes.contains(optionalFilm2.get()));
+        assertThat(films.stream().findFirst().equals(optionalFilm2));
     }
 
     @Test
@@ -321,7 +464,7 @@ public class FilmDbStorageTest {
         filmStorage.addLike(optionalFilm2.get().getId(), userOptional1.get().getId());
 
         Collection<Film> films = filmStorage.getPopularFilms(2);
-        List<Film> listFilms = (List<Film>)films;
+        List<Film> listFilms = (List<Film>) films;
 
         assertThat(films)
                 .isNotEmpty()
