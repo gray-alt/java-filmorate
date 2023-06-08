@@ -6,6 +6,9 @@ DROP TABLE IF EXISTS directors;
 
 DROP TABLE IF EXISTS friends;
 
+DROP TABLE IF EXISTS review_useful;
+DROP TABLE IF EXISTS reviews;
+
 DROP TABLE IF EXISTS film_likes;
 DROP TABLE IF EXISTS users;
 
