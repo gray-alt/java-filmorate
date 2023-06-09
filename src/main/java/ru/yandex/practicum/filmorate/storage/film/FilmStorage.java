@@ -56,4 +56,6 @@ public interface FilmStorage {
     void deleteFilmById(Long id);
 
     Collection<Film> getFilmsRecommendation(long userId);
+
+    Collection<Film> searchFilms(String query, List<String> by);
 }
