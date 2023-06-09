@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -100,5 +101,12 @@ public class UserService {
             throw new NotFoundException("Нет такого пользователя");
         }
         return filmStorage.getFilmsRecommendation(userId);
+    }
+
+    public Collection<Event> getEvents(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+        }
+        return userStorage.getEvents(id);
     }
 }
