@@ -89,13 +89,13 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void deleteReview(Long id) {
         Review review = getReview(id).get();
-        Long userId = review.getUserId();
+        Long user_id = review.getUserId();
 
         String sqlQuery = "delete from reviews where review_id = ?";
         jdbcTemplate.update(sqlQuery, id);
 
         String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, userId, EventType.REVIEW.toString(), Operation.REMOVE.toString(), id);
+        jdbcTemplate.update(sqlForEvent, user_id, EventType.REVIEW.toString(), Operation.REMOVE.toString(), id);
 
         log.info("Удален отзыв с id " + id);
     }
