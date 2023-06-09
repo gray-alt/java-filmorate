@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new ConcurrentHashMap<>();
+    private final Map<Long, Event> events = new ConcurrentHashMap<>();
+    private long eventId = 0;
     private long lastId = 0;
 
     @Override
@@ -83,6 +85,7 @@ public class InMemoryUserStorage implements UserStorage {
         Optional<User> friendOptional = getUserById(friendId);
         userOptional.ifPresent(user -> user.addFriend(friendId));
         friendOptional.ifPresent(user -> user.addFriend(userId));
+        addEvent(userId, EventType.FRIEND, Operation.ADD, friendId);
         log.info("Пользователю с id " + userId + " добавлен друг с id " + friendId);
     }
 
@@ -92,6 +95,7 @@ public class InMemoryUserStorage implements UserStorage {
         Optional<User> friendOptional = getUserById(friendId);
         userOptional.ifPresent(user -> user.removeFriend(friendId));
         friendOptional.ifPresent(user -> user.removeFriend(userId));
+        addEvent(userId, EventType.FRIEND, Operation.REMOVE, friendId);
         log.info("У пользователю с id " + userId + " удален друг с id " + friendId);
     }
 
@@ -130,5 +134,21 @@ public class InMemoryUserStorage implements UserStorage {
         Collection<User> userList = new ArrayList<>();
         usersId.forEach(id -> userList.add(users.get(id)));
         return userList;
+    }
+
+    @Override
+    public Collection<Event> getEvents(Long id) {
+        List<Event> eventsList = new ArrayList<>();
+        for (Event event : events.values()) {
+            if (event.getUserId() == id) {
+                eventsList.add(event);
+            }
+        }
+        return eventsList;
+    }
+
+    public void addEvent(Long userId, EventType eventType, Operation operation, Long id) {
+        events.put(++eventId, Event.builder().userId(userId).eventType(eventType).operation(operation)
+                .entityId(id).build());
     }
 }
