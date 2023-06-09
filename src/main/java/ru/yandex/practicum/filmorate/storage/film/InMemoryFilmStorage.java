@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +15,8 @@ import java.util.stream.Collectors;
 @Component("inMemoryFilmStorage")
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
+    @Autowired
+    InMemoryUserStorage inMemoryUserStorage;
     private final Map<Long, Film> films = new ConcurrentHashMap<>();
     private final Map<Long, Director> directors = new ConcurrentHashMap<>();
     private long lastId = 0;
@@ -84,6 +85,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             return;
         }
         film.get().addLike(userId);
+        inMemoryUserStorage.addEvent(userId, EventType.LIKE, Operation.ADD, id);
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
 
@@ -95,6 +97,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             return;
         }
         film.get().removeLike(userId);
+        inMemoryUserStorage.addEvent(userId, EventType.LIKE, Operation.REMOVE, id);
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 

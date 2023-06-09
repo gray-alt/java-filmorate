@@ -5,10 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -199,6 +196,10 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(Long id, Long userId) {
         String sqlQuery = "merge into film_likes(film_id, user_id) key(film_id, user_id) values(?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.LIKE.toString(), Operation.ADD.toString(), id);
+
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
 
@@ -206,6 +207,10 @@ public class FilmDbStorage implements FilmStorage {
     public void removeLike(Long id, Long userId) {
         String sqlQuery = "delete from film_likes where film_id = ? and user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.LIKE.toString(), Operation.REMOVE.toString(), id);
+
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 
