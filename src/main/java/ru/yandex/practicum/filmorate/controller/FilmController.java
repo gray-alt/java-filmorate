@@ -59,15 +59,20 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
-    @GetMapping("/search")
-    public Collection<Film> searchFilms(@RequestParam String query,
-                                        @RequestParam List<String> by ) {
-        return filmService.searchFilms(query, by);
-    }
-
     @GetMapping("/director/{directorId}")
     public Collection<Film> getDirectorFilms(@PathVariable Long directorId,
                                              @RequestParam(value = "sortBy") String sort) {
         return filmService.getDirectorFilms(directorId, sort);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable long filmId) {
+        filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(@RequestParam String query,
+                                        @RequestParam List<String> by ) {
+        return filmService.searchFilms(query, by);
     }
 }

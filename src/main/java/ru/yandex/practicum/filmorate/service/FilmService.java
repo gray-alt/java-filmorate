@@ -141,6 +141,13 @@ public class FilmService {
         return filmStorage.getDirectorFilms(directorId, sort);
     }
 
+    public void deleteFilmById(Long id) {
+        if (filmStorage.filmNotExist(id)) {
+            throw new NotFoundException("Нет фильма с таким id");
+        }
+        filmStorage.deleteFilmById(id);
+    }
+
     public Collection<Film> searchFilms(String query, List<String> by) {
         if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
             throw new ValidationException("Некорректный запрос. Можно искать только по режиссёру и/или названию фильма.");

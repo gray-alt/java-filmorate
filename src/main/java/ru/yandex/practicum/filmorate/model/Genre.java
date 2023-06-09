@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Objects;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Genre implements Comparable {
-    private final int id;
-    private final String name;
+    final int id;
+    final String name;
 
     @Override
     public boolean equals(Object o) {
@@ -25,7 +28,7 @@ public class Genre implements Comparable {
     @Override
     public int compareTo(Object o) {
         if (this == o || this.equals(o)) return 0;
-        if (this.getId() > ((Genre)o).getId()) return 1;
+        if (this.getId() > ((Genre) o).getId()) return 1;
         return -1;
     }
 }

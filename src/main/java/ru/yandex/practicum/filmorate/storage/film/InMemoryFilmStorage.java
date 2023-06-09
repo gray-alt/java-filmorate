@@ -40,6 +40,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Optional<Film> updateFilm(Film film) throws ValidationException {
         Optional<Film> foundFilm = getFilmById(film.getId());
+        if (foundFilm.isEmpty()) {
+            return Optional.empty();
+        }
         Film newFilm = Film.builder()
                 .id(film.getId())
                 .name(film.getName())
@@ -64,11 +67,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> searchFilms(String query, List<String> by) {
-        return getFilms();
-    }
-
-    @Override
     public boolean filmExist(Long id) {
         return films.containsKey(id);
     }
@@ -81,6 +79,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().addLike(userId);
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
@@ -88,6 +90,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void removeLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().removeLike(userId);
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
@@ -119,6 +125,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Optional<Genre> getGenreById(int id) {
         return Optional.empty();
     }
+
+    @Override
+    public void deleteFilmById(Long id) {
+
+    }
+
 
     private Optional<Film> getFilmById(Long id) throws ValidationException {
         if (id == null) {
@@ -180,5 +192,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void removeDirector(Long id) {
         directors.remove(id);
         log.info("Режиссёр с id " + id + " удалён.");
+    }
+
+    @Override
+    public Collection<Film> getFilmsRecommendation(long userId) {
+        return new ArrayList<>();
     }
 }

@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;
 import java.util.HashMap;
@@ -10,10 +12,11 @@ import java.util.Objects;
 
 @Data
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Director implements Comparable {
-    private final Long id;
+    final Long id;
     @NotBlank(message = "Имя не может быть пустым.")
-    private final String name;
+    final String name;
 
     @Override
     public boolean equals(Object o) {

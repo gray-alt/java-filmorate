@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -66,5 +67,15 @@ public class UserController {
     public Collection<User> getCommonFriends(@PathVariable Long id,
                                              @PathVariable Long otherId) throws ValidationException {
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable long userId) {
+        userService.deleteUserById(userId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getFilmsRecommendation(@PathVariable long id) {
+        return userService.getFilmsRecommendation(id);
     }
 }

@@ -28,4 +28,6 @@ public interface UserStorage {
     Collection<User> getFriends(Long id) throws ValidationException;
 
     Collection<User> getCommonFriends(Long id, Long otherId) throws ValidationException;
+
+    void deleteUserById(Long id);
 }
