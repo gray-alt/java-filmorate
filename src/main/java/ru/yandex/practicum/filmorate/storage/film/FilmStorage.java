@@ -54,6 +54,8 @@ public interface FilmStorage {
 
     void deleteFilmById(Long id);
 
+    Collection<Film> getFilmsRecommendation(long userId);
+
     Collection<Film> getTopFilmsByYear(Integer count, Integer year);
 
     Collection<Film> getTopFilmsByGenre(Integer genre, Integer count);
