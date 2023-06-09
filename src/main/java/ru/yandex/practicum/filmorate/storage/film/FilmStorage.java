@@ -53,4 +53,6 @@ public interface FilmStorage {
     void removeDirector(Long id);
 
     void deleteFilmById(Long id);
+
+    Collection<Film> getFilmsRecommendation(long userId);
 }
