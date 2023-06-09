@@ -6,11 +6,17 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 
 @Component("userDbStorage")
 @Slf4j
@@ -108,6 +114,10 @@ public class UserDbStorage implements UserStorage {
     public void addFriend(Long userId, Long friendId) {
         String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, 0);
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.FRIEND.toString(), Operation.ADD.toString(), friendId);
+
         log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
     }
 
@@ -115,6 +125,10 @@ public class UserDbStorage implements UserStorage {
     public void removeFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.FRIEND.toString(), Operation.REMOVE.toString(), friendId);
+
         log.info("У пользователя с id " + userId + " удален друг с id " + friendId);
     }
 
@@ -168,4 +182,20 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
+    @Override
+    public Collection<Event> getEvents(Long id) {
+        String sqlQuery = "select * from events where user_id = ? order by timestamp ";
+        return jdbcTemplate.query(sqlQuery, this::mapRowEvent, id);
+    }
+
+    private Event mapRowEvent(ResultSet resultSet, int rowNum) throws SQLException {
+        return Event.builder()
+                .timestamp(resultSet.getTimestamp("timestamp"))
+                .userId(resultSet.getLong("user_id"))
+                .eventType(EventType.valueOf(resultSet.getString("event_type")))
+                .operation(Operation.valueOf(resultSet.getString("operation")))
+                .eventId(resultSet.getLong("event_id"))
+                .entityId(resultSet.getLong("entity_id"))
+                .build();
+    }
 }

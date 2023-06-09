@@ -5,11 +5,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 @Component("reviewDbStorage")
 @Slf4j
@@ -39,6 +43,10 @@ public class ReviewDbStorage implements ReviewStorage {
                 .useful(0)
                 .build();
 
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, review.getUserId(), EventType.REVIEW.toString(), Operation.ADD.toString(),
+                reviewId);
+
         log.info("Добавлен отзыв к фильму с id: " + review.getFilmId());
         return Optional.of(newReview);
     }
@@ -65,14 +73,30 @@ public class ReviewDbStorage implements ReviewStorage {
             return newReview;
         }
 
+        String sqlForFirstReviewUserId = "select user_id from reviews where review_id = ?";
+        Collection<Long> collectionUserId = jdbcTemplate.query(sqlForFirstReviewUserId, this::mapRowReviewUserId,
+                review.getId());
+        Long userId = collectionUserId.stream().findFirst().get();
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.REVIEW.toString(), Operation.UPDATE.toString(),
+                review.getId());
+
         log.info("Обновлен отзыв к фильму с id: " + newReview.get().getFilmId());
         return newReview;
     }
 
     @Override
     public void deleteReview(Long id) {
+        Review review = getReview(id).get();
+        Long userId = review.getUserId();
+
         String sqlQuery = "delete from reviews where review_id = ?";
         jdbcTemplate.update(sqlQuery, id);
+
+        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
+        jdbcTemplate.update(sqlForEvent, userId, EventType.REVIEW.toString(), Operation.REMOVE.toString(), id);
+
         log.info("Удален отзыв с id " + id);
     }
 
@@ -151,5 +175,9 @@ public class ReviewDbStorage implements ReviewStorage {
                 .filmId(resultSet.getLong("film_id"))
                 .useful(resultSet.getInt("useful"))
                 .build();
+    }
+
+    private Long mapRowReviewUserId(ResultSet resultSet, int rowNum) throws SQLException {
+        return resultSet.getLong("user_id");
     }
 }
