@@ -33,8 +33,8 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Genre> genres = film.getGenres();
         if (genres != null) {
-            genres = new HashSet<>(genres.stream().sorted(Genre::compareTo).collect(
-                    Collectors.toCollection(LinkedHashSet::new)));
+            genres = genres.stream().sorted(Genre::compareTo).collect(Collectors
+                    .toCollection(LinkedHashSet::new));
             genres.forEach(genre -> addGenreToFilm(filmId, genre.getId()));
         } else {
             genres = new HashSet<>();
@@ -42,8 +42,8 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Director> directors = film.getDirectors();
         if (directors != null) {
-            directors = new HashSet<>(directors.stream().sorted(Director::compareTo).collect(
-                    Collectors.toCollection(LinkedHashSet::new)));
+            directors = directors.stream().sorted(Director::compareTo).collect(Collectors
+                    .toCollection(LinkedHashSet::new));
             directors.forEach(director -> addDirectorToFilm(filmId, director.getId()));
         } else {
             directors = new HashSet<>();
@@ -363,8 +363,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getDirectorFilms(Long directorId, String sort) {
+        String sqlQuery;
         if (sort.equals("year")) {
-            String sqlQuery = "select " +
+            sqlQuery = "select " +
                     "   films.film_id, " +
                     "   films.name, " +
                     "   films.description, " +
@@ -378,9 +379,8 @@ public class FilmDbStorage implements FilmStorage {
                     "   on films.mpa_id = mpa.mpa_id " +
                     "where films.film_id in (select film_id from film_directors where director_id = ?) " +
                     "order by films.release_date";
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
         } else {
-            String sqlQuery = "select " +
+            sqlQuery = "select " +
                     "   films.film_id, " +
                     "   films.name, " +
                     "   films.description, " +
@@ -400,8 +400,8 @@ public class FilmDbStorage implements FilmStorage {
                     "                       where director_id = ?) " +
                     "group by films.film_id " +
                     "order by count(user_id) desc";
-            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
         }
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -434,5 +434,43 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlQuery, id);
 
         log.info("Режиссёр с id " + id + " удалён.");
+    }
+
+    @Override
+    public Collection<Film> getFilmsRecommendation(long userId) {
+        String sqlQuery = "" +
+                "select " +
+                "   films.film_id, " +
+                "   films.name, " +
+                "   films.description, " +
+                "   films.release_date, " +
+                "   films.duration, " +
+                "   films.mpa_id, " +
+                "   mpa.name as mpa_name, " +
+                "   mpa.description as mpa_description " +
+                "from films " +
+                "   left join mpa " +
+                "   on films.mpa_id = mpa.mpa_id " +
+                "where film_id in (" +
+                "    select " +
+                "        film_likes.film_id " +
+                "    from film_likes " +
+                "        left join film_likes as my_likes " +
+                "        on film_likes.film_id = my_likes.film_id " +
+                "        and my_likes.user_id = ? " +
+                "    where film_likes.user_id in ( " +
+                "        select top 1 " +
+                "           other_likes.user_id " +
+                "        from film_likes " +
+                "           left join film_likes as other_likes " +
+                "           on film_likes.film_id = other_likes.film_id " +
+                "        where film_likes.user_id = ? AND other_likes.user_id <> ? " +
+                "        group by other_likes.user_id " +
+                "        order by count(other_likes.film_id) DESC " +
+                "        ) " +
+                "    and my_likes.film_id is null " +
+                "   )";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, userId, userId);
     }
 }

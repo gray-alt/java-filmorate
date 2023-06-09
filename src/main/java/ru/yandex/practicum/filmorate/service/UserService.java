@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -15,9 +17,12 @@ import java.util.Optional;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     public Optional<User> addUser(User user) {
@@ -96,5 +101,12 @@ public class UserService {
             throw new NotFoundException("Пользователь с id " + id + " не найден.");
         }
         return userStorage.getEvents(id);
+    }
+  
+    public Collection<Film> getFilmsRecommendation(long userId) {
+        if (userStorage.userNotExist(userId)) {
+            throw new NotFoundException("Нет такого пользователя");
+        }
+        return filmStorage.getFilmsRecommendation(userId);
     }
 }

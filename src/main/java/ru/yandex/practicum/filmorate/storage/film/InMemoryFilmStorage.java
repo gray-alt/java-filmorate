@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -44,6 +41,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Optional<Film> updateFilm(Film film) throws ValidationException {
         Optional<Film> foundFilm = getFilmById(film.getId());
+        if (foundFilm.isEmpty()) {
+            return Optional.empty();
+        }
         Film newFilm = Film.builder()
                 .id(film.getId())
                 .name(film.getName())
@@ -80,6 +80,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().addLike(userId);
         inMemoryUserStorage.addEvent(userId, EventType.LIKE, Operation.ADD, id);
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
@@ -88,6 +92,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void removeLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().removeLike(userId);
         inMemoryUserStorage.addEvent(userId, EventType.LIKE, Operation.REMOVE, id);
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
@@ -187,5 +195,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void removeDirector(Long id) {
         directors.remove(id);
         log.info("Режиссёр с id " + id + " удалён.");
+    }
+
+    @Override
+    public Collection<Film> getFilmsRecommendation(long userId) {
+        return new ArrayList<>();
     }
 }
