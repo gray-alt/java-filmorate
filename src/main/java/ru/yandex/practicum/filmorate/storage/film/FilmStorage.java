@@ -61,4 +61,5 @@ public interface FilmStorage {
     Collection<Film> getTopFilmsByGenre(Integer genre, Integer count);
 
     Collection<Film> getTopFilmsByGenreAndYear(Integer genreId, Integer year, Integer count);
+
 }
