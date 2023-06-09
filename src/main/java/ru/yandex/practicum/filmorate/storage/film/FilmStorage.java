@@ -53,4 +53,10 @@ public interface FilmStorage {
     void removeDirector(Long id);
 
     void deleteFilmById(Long id);
+
+    Collection<Film> getTopFilmsByYear(Integer count, Integer year);
+
+    Collection<Film> getTopFilmsByGenre(Integer genre, Integer count);
+
+    Collection<Film> getTopFilmsByGenreAndYear(Integer genreId, Integer year, Integer count);
 }

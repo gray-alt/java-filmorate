@@ -185,4 +185,20 @@ public class InMemoryFilmStorage implements FilmStorage {
         directors.remove(id);
         log.info("Режиссёр с id " + id + " удалён.");
     }
+
+    @Override
+    public Collection<Film> getTopFilmsByGenre(Integer genre, Integer count) {
+        return null;
+    }
+    
+    @Override
+    public Collection<Film> getTopFilmsByYear(Integer count, Integer year) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getTopFilmsByGenreAndYear(Integer genreId, Integer year, Integer count) {
+        return null;
+    }
+
 }

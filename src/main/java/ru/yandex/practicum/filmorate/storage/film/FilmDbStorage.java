@@ -199,6 +199,103 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getTopFilmsByYear(Integer count, Integer year) {
+        String sqlQuery =
+                "select " +
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id " +
+                        "where film_id in (" +
+                        "   select top ? " +
+                        "       films.film_id " +
+                        "   from films " +
+                        "       left join film_likes " +
+                        "       on films.film_id = film_likes.film_id " +
+                        "   where year(release_date) = ? " +
+                        "   group by films.film_id " +
+                        "   order by count(film_likes.user_id) desc" +
+                        ")";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count, year);
+    }
+
+    @Override
+    public Collection<Film> getTopFilmsByGenre(Integer genre, Integer count) {
+        String sqlQuery =
+                "select " +
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id " +
+                        "   left join film_genres " +
+                        "   on film_genres.film_id = films.film_id " +
+                        "   left join genres " +
+                        "   on film_genres.genre_id = genres.genre_id " +
+                        "where film_genres.genre_id = ? AND " +
+                        "films.film_id in (" +
+                        "   select top ? " +
+                        "       films.film_id " +
+                        "   from films " +
+                        "       left join film_likes " +
+                        "       on films.film_id = film_likes.film_id " +
+                        "   group by films.film_id " +
+                        "   order by count(film_likes.user_id) desc" +
+                        ")";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genre, count);
+    }
+
+    @Override
+    public Collection<Film> getTopFilmsByGenreAndYear(Integer genre, Integer year, Integer count) {
+        String sqlQuery =
+                "select " +
+                        "   films.film_id, " +
+                        "   films.name, " +
+                        "   films.description, " +
+                        "   films.release_date, " +
+                        "   films.duration, " +
+                        "   films.mpa_id, " +
+                        "   mpa.name as mpa_name, " +
+                        "   mpa.description as mpa_description " +
+                        "from films " +
+                        "   left join mpa " +
+                        "   on films.mpa_id = mpa.mpa_id " +
+                        "   left join film_genres " +
+                        "   on film_genres.film_id = films.film_id " +
+                        "   left join genres " +
+                        "   on film_genres.genre_id = genres.genre_id " +
+                        "where film_genres.genre_id = ? AND " +
+                        "year(release_date) = ? AND " +
+                        "films.film_id in (" +
+                        "   select top ? " +
+                        "       films.film_id " +
+                        "   from films " +
+                        "       left join film_likes " +
+                        "       on films.film_id = film_likes.film_id " +
+                        "   group by films.film_id " +
+                        "   order by count(film_likes.user_id) desc" +
+                        ")";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genre, year, count);
+    }
+
+
+    @Override
     public Collection<Mpa> getAllMpa() {
         String sqlQuery = "select * from mpa";
         return jdbcTemplate.query(sqlQuery, this::mapRowToMpa);
@@ -430,4 +527,6 @@ public class FilmDbStorage implements FilmStorage {
 
         log.info("Режиссёр с id " + id + " удалён.");
     }
+
+
 }
