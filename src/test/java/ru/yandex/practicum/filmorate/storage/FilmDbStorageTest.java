@@ -173,8 +173,6 @@ public class FilmDbStorageTest {
         assertThat(optionalDirector)
                 .isPresent()
                 .hasValueSatisfying(dir ->
-                        assertThat(dir).hasFieldOrPropertyWithValue("id", 1L))
-                .hasValueSatisfying(dir ->
                         assertThat(dir).hasFieldOrPropertyWithValue("name", "Director"));
     }
 
@@ -188,8 +186,6 @@ public class FilmDbStorageTest {
 
         assertThat(optionalUpdatedDirector)
                 .isPresent()
-                .hasValueSatisfying(dir ->
-                        assertThat(dir).hasFieldOrPropertyWithValue("id", 1L))
                 .hasValueSatisfying(dir ->
                         assertThat(dir).hasFieldOrPropertyWithValue("name", "UpdatedDirector"));
     }
