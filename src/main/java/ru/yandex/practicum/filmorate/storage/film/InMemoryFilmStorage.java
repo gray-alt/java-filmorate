@@ -203,7 +203,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Collection<Film> getTopFilmsByGenre(Integer genre, Integer count) {
         return null;
     }
-    
+
     @Override
     public Collection<Film> getTopFilmsByYear(Integer count, Integer year) {
         return null;

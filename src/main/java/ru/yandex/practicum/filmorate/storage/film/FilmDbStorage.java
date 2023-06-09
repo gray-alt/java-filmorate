@@ -524,7 +524,6 @@ public class FilmDbStorage implements FilmStorage {
     public void removeDirector(Long id) {
         String sqlQuery = "delete from directors where director_id = ?";
         jdbcTemplate.update(sqlQuery, id);
-
         log.info("Режиссёр с id " + id + " удалён.");
     }
 
