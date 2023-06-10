@@ -146,4 +146,9 @@ public class FilmService {
         }
         filmStorage.deleteFilmById(id);
     }
+
+    public Collection<Film> getCommonFilms(Integer userId, Integer otherId) {
+        return filmStorage.getCommonFilms(userId, otherId);
+    }
+
 }

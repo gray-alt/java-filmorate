@@ -468,4 +468,57 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, userId, userId);
     }
+
+    public Collection<Film> getCommonFilms(Integer userId, Integer otherId) {
+        // К сожалению, H2 (или связка Hibernate и H2) весьма странно работает с with (CTE) и несколькими
+        // последовательными JOIN'ами: получалось так, что в DBeaver запрос отрабатывал нормально,
+        // но после переноса в Java он возвращал пустой RecordSet.
+        // Поэтому в запросе не получилось использовать JOIN в связке с WITH.
+
+        String sqlQuery = "" +
+                "select  " +
+                "  l.film_id,  " +
+                "  l.name,  " +
+                "  l.description,  " +
+                "  l.release_date,  " +
+                "  l.duration,  " +
+                "  l.mpa_id,  " +
+                "  r1.name as mpa_name,  " +
+                "  r1.description as mpa_description  " +
+                "from  " +
+                "  films l  " +
+                "left join  " +
+                "  mpa r1  " +
+                "on  " +
+                "  l.mpa_id = r1.mpa_id  " +
+                "inner join ( " +
+                "  select  " +
+                "    l.film_id,  " +
+                "    count(*) AS likes_cnt  " +
+                "  from  " +
+                "    film_likes as l  " +
+                "  inner join ( " +
+                "    select distinct  " +
+                "      l.film_id  " +
+                "    from  " +
+                "      film_likes as l  " +
+                "    inner join  " +
+                "      film_likes as r  " +
+                "    on  " +
+                "      l.film_id = r.film_id  " +
+                "    where  " +
+                "      l.user_id = ? AND r.user_id = ? " +
+                "  ) as r  " +
+                "  on  " +
+                "    l.film_id = r.film_id  " +
+                "  group by l.film_id  " +
+                "  ) r2  " +
+                "on  " +
+                "  l.film_id = r2.film_id  " +
+                "order by  " +
+                "  r2.likes_cnt desc ";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, otherId);
+    }
+
 }
