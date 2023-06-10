@@ -56,5 +56,5 @@ public interface FilmStorage {
 
     Collection<Film> getFilmsRecommendation(long userId);
 
-    Collection<Film> getCommonFilms(Integer userId, Integer otherId);
+    Collection<Film> getCommonFilms(Long userId, Long otherId);
 }

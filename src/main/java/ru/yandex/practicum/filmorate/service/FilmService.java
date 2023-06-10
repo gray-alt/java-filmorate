@@ -147,7 +147,10 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    public Collection<Film> getCommonFilms(Integer userId, Integer otherId) {
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        if (userId.equals(otherId)) {
+            throw new ValidationException("Введён один и тот же Id. Для получения общих фильмов необходимо ввести Id друга. ");
+        }
         return filmStorage.getCommonFilms(userId, otherId);
     }
 

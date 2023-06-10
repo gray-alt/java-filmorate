@@ -200,7 +200,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getCommonFilms(Integer userId, Integer otherId) {
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
         return null;
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -469,54 +470,34 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, userId, userId);
     }
 
-    public Collection<Film> getCommonFilms(Integer userId, Integer otherId) {
-        // К сожалению, H2 (или связка Hibernate и H2) весьма странно работает с with (CTE) и несколькими
-        // последовательными JOIN'ами: получалось так, что в DBeaver запрос отрабатывал нормально,
-        // но после переноса в Java он возвращал пустой RecordSet.
-        // Поэтому в запросе не получилось использовать JOIN в связке с WITH.
-
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
         String sqlQuery = "" +
-                "select  " +
-                "  l.film_id,  " +
-                "  l.name,  " +
-                "  l.description,  " +
-                "  l.release_date,  " +
-                "  l.duration,  " +
-                "  l.mpa_id,  " +
-                "  r1.name as mpa_name,  " +
-                "  r1.description as mpa_description  " +
-                "from  " +
-                "  films l  " +
-                "left join  " +
-                "  mpa r1  " +
-                "on  " +
-                "  l.mpa_id = r1.mpa_id  " +
-                "inner join ( " +
-                "  select  " +
-                "    l.film_id,  " +
-                "    count(*) AS likes_cnt  " +
-                "  from  " +
-                "    film_likes as l  " +
-                "  inner join ( " +
-                "    select distinct  " +
-                "      l.film_id  " +
-                "    from  " +
-                "      film_likes as l  " +
-                "    inner join  " +
-                "      film_likes as r  " +
-                "    on  " +
-                "      l.film_id = r.film_id  " +
-                "    where  " +
-                "      l.user_id = ? AND r.user_id = ? " +
-                "  ) as r  " +
-                "  on  " +
-                "    l.film_id = r.film_id  " +
-                "  group by l.film_id  " +
-                "  ) r2  " +
-                "on  " +
-                "  l.film_id = r2.film_id  " +
-                "order by  " +
-                "  r2.likes_cnt desc ";
+                "select " +
+        "films.film_id, " +
+                "films.name, " +
+                "films.description, " +
+                "films.release_date, " +
+                "films.duration, " +
+                "films.mpa_id, " +
+                "mpa.name as mpa_name, " +
+        "mpa.description as mpa_description " +
+        "from films " +
+        "left join mpa " +
+        "on films.mpa_id = mpa.mpa_id " +
+        "left join film_likes " +
+        "on films.film_id = film_likes.film_id " +
+        "where " +
+        "films.film_id in " +
+        "(select " +
+        "film_likes.film_id " +
+        "from film_likes " +
+        "inner join film_likes as friend_likes " +
+        "on film_likes.film_id = friend_likes.film_id " +
+        "where " +
+        "film_likes.user_id = ? " +
+        "and friend_likes.user_id = ?) " +
+        "group by films.film_id " +
+        "order by count(film_likes.user_id) ";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, otherId);
     }
