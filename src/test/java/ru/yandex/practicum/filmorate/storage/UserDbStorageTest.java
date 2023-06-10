@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
@@ -26,6 +27,7 @@ class UserDbStorageTest {
     private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
     private final ReviewDbStorage reviewDbStorage;
+    private final EventManager eventManager;
 
     @Test
     public void testAddUser() {
@@ -411,7 +413,7 @@ class UserDbStorageTest {
 
         assertThat(reviewDbStorage.getReview(1L).isEmpty());
 
-        Collection<Event> events = userStorage.getEvents(optionalUser1.get().getId());
+        Collection<Event> events = eventManager.getEvents(optionalUser1.get().getId());
 
         assertThat(events)
                 .size()

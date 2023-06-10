@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
@@ -180,23 +179,6 @@ public class UserDbStorage implements UserStorage {
                 .name(resultSet.getString("name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
                 .friends(new HashSet<>())
-                .build();
-    }
-
-    @Override
-    public Collection<Event> getEvents(Long id) {
-        String sqlQuery = "select * from events where user_id = ? order by timestamp ";
-        return jdbcTemplate.query(sqlQuery, this::mapRowEvent, id);
-    }
-
-    private Event mapRowEvent(ResultSet resultSet, int rowNum) throws SQLException {
-        return Event.builder()
-                .timestamp(resultSet.getTimestamp("timestamp"))
-                .userId(resultSet.getLong("user_id"))
-                .eventType(EventType.valueOf(resultSet.getString("event_type")))
-                .operation(Operation.valueOf(resultSet.getString("operation")))
-                .eventId(resultSet.getLong("event_id"))
-                .entityId(resultSet.getLong("entity_id"))
                 .build();
     }
 }
