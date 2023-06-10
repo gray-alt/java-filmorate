@@ -468,4 +468,37 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, userId, userId);
     }
+
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        String sqlQuery = "" +
+                "select " +
+        "films.film_id, " +
+                "films.name, " +
+                "films.description, " +
+                "films.release_date, " +
+                "films.duration, " +
+                "films.mpa_id, " +
+                "mpa.name as mpa_name, " +
+        "mpa.description as mpa_description " +
+        "from films " +
+        "left join mpa " +
+        "on films.mpa_id = mpa.mpa_id " +
+        "left join film_likes " +
+        "on films.film_id = film_likes.film_id " +
+        "where " +
+        "films.film_id in " +
+        "(select " +
+        "film_likes.film_id " +
+        "from film_likes " +
+        "inner join film_likes as friend_likes " +
+        "on film_likes.film_id = friend_likes.film_id " +
+        "where " +
+        "film_likes.user_id = ? " +
+        "and friend_likes.user_id = ?) " +
+        "group by films.film_id " +
+        "order by count(film_likes.user_id) ";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, otherId);
+    }
+
 }
