@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,9 +20,11 @@ import java.util.Optional;
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final EventManager eventManager;
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, EventManager eventManager) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -43,9 +46,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 .useful(0)
                 .build();
 
-        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, review.getUserId(), EventType.REVIEW.toString(), Operation.ADD.toString(),
-                reviewId);
+        eventManager.updateEvents(review.getUserId(), EventType.REVIEW, Operation.ADD, reviewId);
 
         log.info("Добавлен отзыв к фильму с id: " + review.getFilmId());
         return Optional.of(newReview);
@@ -78,9 +79,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.getId());
         Long userId = collectionUserId.stream().findFirst().get();
 
-        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, userId, EventType.REVIEW.toString(), Operation.UPDATE.toString(),
-                review.getId());
+        eventManager.updateEvents(userId, EventType.REVIEW, Operation.UPDATE, review.getId());
 
         log.info("Обновлен отзыв к фильму с id: " + newReview.get().getFilmId());
         return newReview;
@@ -89,13 +88,12 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void deleteReview(Long id) {
         Review review = getReview(id).get();
-        Long user_id = review.getUserId();
+        Long userId = review.getUserId();
 
         String sqlQuery = "delete from reviews where review_id = ?";
         jdbcTemplate.update(sqlQuery, id);
 
-        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, user_id, EventType.REVIEW.toString(), Operation.REMOVE.toString(), id);
+        eventManager.updateEvents(userId, EventType.REVIEW, Operation.REMOVE, id);
 
         log.info("Удален отзыв с id " + id);
     }
