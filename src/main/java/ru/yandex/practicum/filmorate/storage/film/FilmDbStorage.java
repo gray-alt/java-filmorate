@@ -165,15 +165,18 @@ public class FilmDbStorage implements FilmStorage {
                 "   on film_directors.director_id = directors.director_id " +
                 "   left join film_likes    " +
                 "   on films.film_id = film_likes.film_id ";
+        boolean isSearchByDirector = false;
         if (by.contains("director")) {
             sqlQuery = sqlQuery + " where lower(directors.name) like lower('%" + query + "%')";
-            if (by.contains("title")) {
-                sqlQuery = sqlQuery + " or lower(films.name) like lower('%" + query + "%')";
+            isSearchByDirector = true;
+        }
+        if (by.contains("title")) {
+            if (isSearchByDirector) {
+                sqlQuery = sqlQuery + " or ";
+            } else {
+                sqlQuery = sqlQuery + " where ";
             }
-        } else {
-            if (by.contains("title")) {
-                sqlQuery = sqlQuery + " where lower(films.name) like lower('%" + query + "%')";
-            }
+            sqlQuery = sqlQuery + "lower(films.name) like lower('%" + query + "%')";
         }
         sqlQuery = sqlQuery + "   group by films.film_id    " +
                 "order by count(film_likes.user_id) desc;";
