@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,9 +23,11 @@ import java.util.Optional;
 @Slf4j
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final EventManager eventManager;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, EventManager eventManager) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -115,8 +118,7 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, 0);
 
-        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, userId, EventType.FRIEND.toString(), Operation.ADD.toString(), friendId);
+        eventManager.updateEvents(userId, EventType.FRIEND, Operation.ADD, friendId);
 
         log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
     }
@@ -126,8 +128,7 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
 
-        String sqlForEvent = "insert into events(user_id, event_type, operation, entity_id) values(?, ?, ?, ?)";
-        jdbcTemplate.update(sqlForEvent, userId, EventType.FRIEND.toString(), Operation.REMOVE.toString(), friendId);
+        eventManager.updateEvents(userId, EventType.FRIEND, Operation.REMOVE, friendId);
 
         log.info("У пользователя с id " + userId + " удален друг с id " + friendId);
     }
