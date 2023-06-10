@@ -173,8 +173,4 @@ public class ReviewDbStorage implements ReviewStorage {
                 .useful(resultSet.getInt("useful"))
                 .build();
     }
-
-    private Long mapRowReviewUserId(ResultSet resultSet, int rowNum) throws SQLException {
-        return resultSet.getLong("user_id");
-    }
 }
