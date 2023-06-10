@@ -74,12 +74,7 @@ public class ReviewDbStorage implements ReviewStorage {
             return newReview;
         }
 
-        String sqlForFirstReviewUserId = "select user_id from reviews where review_id = ?";
-        Collection<Long> collectionUserId = jdbcTemplate.query(sqlForFirstReviewUserId, this::mapRowReviewUserId,
-                review.getId());
-        Long userId = collectionUserId.stream().findFirst().get();
-
-        eventManager.updateEvents(userId, EventType.REVIEW, Operation.UPDATE, review.getId());
+        eventManager.updateEvents(newReview.get().getUserId(), EventType.REVIEW, Operation.UPDATE, review.getId());
 
         log.info("Обновлен отзыв к фильму с id: " + newReview.get().getFilmId());
         return newReview;
@@ -87,15 +82,19 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(Long id) {
-        Review review = getReview(id).get();
-        Long userId = review.getUserId();
+        Optional<Review> optionalReview = getReview(id);
+        if (optionalReview.isPresent()) {
+            Review review = optionalReview.get();
 
-        String sqlQuery = "delete from reviews where review_id = ?";
-        jdbcTemplate.update(sqlQuery, id);
+            String sqlQuery = "delete from reviews where review_id = ?";
+            jdbcTemplate.update(sqlQuery, id);
 
-        eventManager.updateEvents(userId, EventType.REVIEW, Operation.REMOVE, id);
+            eventManager.updateEvents(review.getUserId(), EventType.REVIEW, Operation.REMOVE, id);
 
-        log.info("Удален отзыв с id " + id);
+            log.info("Удален отзыв с id " + id);
+        } else {
+            log.info("Операция по удалению отзыва не прошла, т.к. отзыв с id " + id + "не найден.");
+        }
     }
 
     @Override
