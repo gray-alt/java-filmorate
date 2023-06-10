@@ -12,8 +12,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.Year;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -70,10 +68,6 @@ public class FilmService {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
         filmStorage.removeLike(id, userId);
-    }
-
-    public Collection<Film> getPopularFilms(Integer count) {
-        return filmStorage.getPopularFilms(count);
     }
 
     public Collection<Mpa> getAllMpa() {
@@ -149,36 +143,7 @@ public class FilmService {
         filmStorage.deleteFilmById(id);
     }
 
-    // Получение топ N фильмов по количеству лайков. В случае если genreId и/или year > 0 применяем фильтрацию по ним.
     public Collection<Film> getTopByLikes(Integer count, Integer genreId, Integer year) {
-        Collection<Film> topFilms = new ArrayList<Film>();
-        if (genreId > 0 || year > 0) {
-            topFilms = getTopFilmsByFilter(count, genreId, year);
-        } else if (genreId == 0 && year == 0) {
-            topFilms = filmStorage.getPopularFilms(count);
-        }
-        return topFilms;
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
-
-    // Получение фильмов с учетом жанра и/или года
-    private Collection<Film> getTopFilmsByFilter(Integer count, Integer genreId, Integer year) {
-        Collection<Film> topFilms = new ArrayList<Film>();
-        // Если год задан, получаем список с учетом года. Иначе - только по жанрам.
-        if (year > 0) {
-            // Если год раньше 1895 года или позже текущего, выдается сообщение об ошибке
-            if (year < 1895 || year > Year.now().getValue()) {
-                throw new ValidationException("Указан некорректный год.");
-            }
-            // Если задан жанр, получаем список с учетом жанра. Иначе - только по году.
-            if (genreId > 0) {
-                topFilms = filmStorage.getTopFilmsByGenreAndYear(genreId, year, count);
-            } else {
-                topFilms = filmStorage.getTopFilmsByYear(count, year);
-            }
-        } else {
-            topFilms = filmStorage.getTopFilmsByGenre(genreId, count);
-        }
-        return topFilms;
-    }
-
 }

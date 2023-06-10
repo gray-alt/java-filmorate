@@ -26,8 +26,6 @@ public interface FilmStorage {
 
     void removeLike(Long id, Long userId) throws ValidationException;
 
-    Collection<Film> getPopularFilms(Integer count);
-
     Collection<Mpa> getAllMpa();
 
     Optional<Mpa> getMpaById(int id);
@@ -56,10 +54,5 @@ public interface FilmStorage {
 
     Collection<Film> getFilmsRecommendation(long userId);
 
-    Collection<Film> getTopFilmsByYear(Integer count, Integer year);
-
-    Collection<Film> getTopFilmsByGenre(Integer genre, Integer count);
-
-    Collection<Film> getTopFilmsByGenreAndYear(Integer genreId, Integer year, Integer count);
-
+    Collection<Film> getPopularFilms(Integer count, Integer genre, Integer year);
 }
