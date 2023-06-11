@@ -241,7 +241,7 @@ public class FilmDbStorage implements FilmStorage {
                 "   order by count(film_likes.user_id) desc" +
                 ")";
 
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genre, genre, year, year, count);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count, genre, genre, year, year);
     }
 
     @Override
