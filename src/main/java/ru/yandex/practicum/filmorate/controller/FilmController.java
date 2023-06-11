@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController()
@@ -74,5 +75,11 @@ public class FilmController {
     @DeleteMapping("/{filmId}")
     public void deleteFilmById(@PathVariable long filmId) {
         filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(@RequestParam String query,
+                                        @RequestParam List<String> by) {
+        return filmService.searchFilms(query, by);
     }
 }
