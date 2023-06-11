@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -17,11 +19,14 @@ import java.util.Optional;
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventManager eventManager;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("eventManager") EventManager eventManager) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.eventManager = eventManager;
     }
 
     public Optional<User> addUser(User user) {
@@ -100,5 +105,12 @@ public class UserService {
             throw new NotFoundException("Нет такого пользователя");
         }
         return filmStorage.getFilmsRecommendation(userId);
+    }
+
+    public Collection<Event> getEvents(Long id) {
+        if (userStorage.userNotExist(id)) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+        }
+        return eventManager.getEvents(id);
     }
 }

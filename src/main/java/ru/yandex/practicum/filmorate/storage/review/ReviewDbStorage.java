@@ -5,19 +5,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 @Component("reviewDbStorage")
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final EventManager eventManager;
 
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, EventManager eventManager) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -38,6 +45,8 @@ public class ReviewDbStorage implements ReviewStorage {
                 .filmId(review.getFilmId())
                 .useful(0)
                 .build();
+
+        eventManager.updateEvents(review.getUserId(), EventType.REVIEW, Operation.ADD, reviewId);
 
         log.info("Добавлен отзыв к фильму с id: " + review.getFilmId());
         return Optional.of(newReview);
@@ -65,15 +74,27 @@ public class ReviewDbStorage implements ReviewStorage {
             return newReview;
         }
 
+        eventManager.updateEvents(newReview.get().getUserId(), EventType.REVIEW, Operation.UPDATE, review.getId());
+
         log.info("Обновлен отзыв к фильму с id: " + newReview.get().getFilmId());
         return newReview;
     }
 
     @Override
     public void deleteReview(Long id) {
-        String sqlQuery = "delete from reviews where review_id = ?";
-        jdbcTemplate.update(sqlQuery, id);
-        log.info("Удален отзыв с id " + id);
+        Optional<Review> optionalReview = getReview(id);
+        if (optionalReview.isPresent()) {
+            Review review = optionalReview.get();
+
+            String sqlQuery = "delete from reviews where review_id = ?";
+            jdbcTemplate.update(sqlQuery, id);
+
+            eventManager.updateEvents(review.getUserId(), EventType.REVIEW, Operation.REMOVE, id);
+
+            log.info("Удален отзыв с id " + id);
+        } else {
+            log.info("Операция по удалению отзыва не прошла, т.к. отзыв с id " + id + "не найден.");
+        }
     }
 
     @Override

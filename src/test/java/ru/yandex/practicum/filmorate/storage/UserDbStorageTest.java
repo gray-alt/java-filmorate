@@ -5,7 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
@@ -19,6 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
     private final UserDbStorage userStorage;
+    private final FilmDbStorage filmStorage;
+    private final ReviewDbStorage reviewDbStorage;
+    private final EventManager eventManager;
 
     @Test
     public void testAddUser() {
@@ -316,5 +325,98 @@ class UserDbStorageTest {
         assertThat(friends)
                 .size()
                 .isEqualTo(1);
+    }
+
+    @Test
+    public void testGetEvents() {
+        User user1 = User.builder()
+                .login("User1")
+                .email("UserMail")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        Optional<User> optionalUser1 = userStorage.addUser(user1);
+
+        assertThat(optionalUser1)
+                .isPresent();
+
+        User user2 = User.builder()
+                .login("User2")
+                .email("UserMail")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        Optional<User> optionalUser2 = userStorage.addUser(user2);
+
+        assertThat(optionalUser2)
+                .isPresent();
+
+        User user3 = User.builder()
+                .login("User3")
+                .email("UserMail")
+                .birthday(LocalDate.of(2000, 1, 1))
+                .build();
+
+        Optional<User> optionalUser3 = userStorage.addUser(user3);
+
+        assertThat(optionalUser3)
+                .isPresent();
+
+        userStorage.addFriend(optionalUser1.get().getId(), optionalUser2.get().getId());
+        userStorage.addFriend(optionalUser1.get().getId(), optionalUser3.get().getId());
+        userStorage.addFriend(optionalUser2.get().getId(), optionalUser3.get().getId());
+        userStorage.removeFriend(optionalUser1.get().getId(), optionalUser2.get().getId());
+
+        Film film = Film.builder()
+                .name("Film name")
+                .description("Film description")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(60)
+                .build();
+
+        Optional<Film> optionalFilm = filmStorage.addFilm(film);
+
+        assertThat(optionalFilm)
+                .isPresent();
+
+        filmStorage.addLike(optionalFilm.get().getId(), optionalUser1.get().getId());
+        filmStorage.removeLike(optionalFilm.get().getId(), optionalUser1.get().getId());
+
+        Review review = Review.builder()
+                .content("Это обзор фильма")
+                .positive(true)
+                .filmId(optionalFilm.get().getId())
+                .userId(optionalUser1.get().getId())
+                .build();
+
+        Optional<Review> optionalReview = reviewDbStorage.addReview(review);
+
+        assertThat(optionalReview)
+                .isPresent();
+
+        Review reviewForUpdate = Review.builder()
+                .id(optionalReview.get().getId())
+                .content("Обновленный обзор")
+                .positive(review.getPositive())
+                .filmId(review.getFilmId())
+                .userId(review.getUserId())
+                .build();
+
+        Optional<Review> optionalUpdatedReview = reviewDbStorage.updateReview(reviewForUpdate);
+
+        assertThat(optionalUpdatedReview)
+                .isPresent();
+
+        assertThat(optionalUpdatedReview.get().getContent().equals("Обновленный обзор"));
+
+        reviewDbStorage.deleteReview(1L);
+
+        assertThat(reviewDbStorage.getReview(1L).isEmpty());
+
+        Collection<Event> events = eventManager.getEvents(optionalUser1.get().getId());
+
+        assertThat(events)
+                .size()
+                .isEqualTo(8);
     }
 }
