@@ -551,5 +551,4 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, otherId);
     }
-
 }
