@@ -98,13 +98,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 
-    @Override
+    /*@Override
     public Collection<Film> getPopularFilms(Integer count) {
         return films.values().stream()
                 .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
                 .limit(count)
                 .collect(Collectors.toList());
-    }
+    }  */
 
     @Override
     public Collection<Mpa> getAllMpa() {
@@ -200,6 +200,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getPopularFilms(Integer count, Integer genre, Integer year) {
+        return null;
+    }
+
     public Collection<Film> searchFilms(String query, List<String> by) {
         return new ArrayList<>();
     }

@@ -210,31 +210,38 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getPopularFilms(Integer count) {
-        String sqlQuery =
-                "select " +
-                        "   films.film_id, " +
-                        "   films.name, " +
-                        "   films.description, " +
-                        "   films.release_date, " +
-                        "   films.duration, " +
-                        "   films.mpa_id, " +
-                        "   mpa.name as mpa_name, " +
-                        "   mpa.description as mpa_description " +
-                        "from films " +
-                        "   left join mpa " +
-                        "   on films.mpa_id = mpa.mpa_id " +
-                        "where film_id in (" +
-                        "   select top ? " +
-                        "       films.film_id " +
-                        "   from films " +
-                        "       left join film_likes " +
-                        "       on films.film_id = film_likes.film_id " +
-                        "   group by films.film_id " +
-                        "   order by count(film_likes.user_id) desc" +
-                        ")";
+    public Collection<Film> getPopularFilms(Integer count, Integer genre, Integer year) {
+        String sqlQuery = "" +
+                "select distinct " +
+                "   films.film_id, " +
+                "   films.name, " +
+                "   films.description, " +
+                "   films.release_date, " +
+                "   films.duration, " +
+                "   films.mpa_id, " +
+                "   mpa.name as mpa_name, " +
+                "   mpa.description as mpa_description " +
+                "from films " +
+                "   left join mpa " +
+                "   on films.mpa_id = mpa.mpa_id " +
+                "   left join film_genres " +
+                "   on film_genres.film_id = films.film_id " +
+                "where " +
+                "  ((? = 0) or (film_genres.genre_id = ?)) " +
+                "  AND " +
+                "  ((? = 0) or (year(release_date) = ?)) " +
+                "  AND " +
+                "films.film_id in (" +
+                "   select top ? " +
+                "       films.film_id " +
+                "   from films " +
+                "       left join film_likes " +
+                "       on films.film_id = film_likes.film_id " +
+                "   group by films.film_id " +
+                "   order by count(film_likes.user_id) desc" +
+                ")";
 
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm,  genre, genre, year, year, count);
     }
 
     @Override
@@ -466,7 +473,6 @@ public class FilmDbStorage implements FilmStorage {
     public void removeDirector(Long id) {
         String sqlQuery = "delete from directors where director_id = ?";
         jdbcTemplate.update(sqlQuery, id);
-
         log.info("Режиссёр с id " + id + " удалён.");
     }
 

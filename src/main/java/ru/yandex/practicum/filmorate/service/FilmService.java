@@ -71,10 +71,6 @@ public class FilmService {
         filmStorage.removeLike(id, userId);
     }
 
-    public Collection<Film> getPopularFilms(Integer count) {
-        return filmStorage.getPopularFilms(count);
-    }
-
     public Collection<Mpa> getAllMpa() {
         return filmStorage.getAllMpa();
     }
@@ -146,6 +142,10 @@ public class FilmService {
             throw new NotFoundException("Нет фильма с таким id");
         }
         filmStorage.deleteFilmById(id);
+    }
+
+    public Collection<Film> getTopByLikes(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     public Collection<Film> searchFilms(String query, List<String> by) {

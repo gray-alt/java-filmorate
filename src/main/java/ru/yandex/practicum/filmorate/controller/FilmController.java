@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -56,8 +57,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") @Positive Integer count) {
-        return filmService.getPopularFilms(count);
+    public Collection<Film> getTopFilmsByLikes(@RequestParam(defaultValue = "10") @Positive Integer count,
+                                               @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer genreId,
+                                               @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer year) {
+        return filmService.getTopByLikes(count, genreId, year);
     }
 
     @GetMapping("/common")
