@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -55,4 +56,8 @@ public interface FilmStorage {
     Collection<Film> getFilmsRecommendation(long userId);
 
     Collection<Film> getPopularFilms(Integer count, Integer genre, Integer year);
+
+    Collection<Film> searchFilms(String query, List<String> by);
+
+    Collection<Film> getCommonFilms(Long userId, Long otherId);
 }

@@ -8,9 +8,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController()
@@ -61,6 +63,12 @@ public class FilmController {
         return filmService.getTopByLikes(count, genreId, year);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@NotNull @Positive @RequestParam Long userId,
+                                           @NotNull @Positive @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/director/{directorId}")
     public Collection<Film> getDirectorFilms(@PathVariable Long directorId,
                                              @RequestParam(value = "sortBy") String sort) {
@@ -70,5 +78,11 @@ public class FilmController {
     @DeleteMapping("/{filmId}")
     public void deleteFilmById(@PathVariable long filmId) {
         filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(@RequestParam String query,
+                                        @RequestParam List<String> by) {
+        return filmService.searchFilms(query, by);
     }
 }

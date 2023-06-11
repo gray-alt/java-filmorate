@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -145,5 +146,18 @@ public class FilmService {
 
     public Collection<Film> getTopByLikes(Integer count, Integer genreId, Integer year) {
         return filmStorage.getPopularFilms(count, genreId, year);
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
+            throw new ValidationException("Некорректный запрос. Можно искать только по режиссёру и/или названию фильма.");
+        }
+        return filmStorage.searchFilms(query, by);
+    }
+
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        if (userId.equals(otherId)) {
+            throw new ValidationException("Введён один и тот же Id. Для получения общих фильмов необходимо ввести Id друга. ");
+        }
+        return filmStorage.getCommonFilms(userId, otherId);
     }
 }

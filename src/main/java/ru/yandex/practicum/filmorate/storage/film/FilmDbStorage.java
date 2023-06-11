@@ -144,6 +144,45 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        String sqlQuery = "select " +
+                "   films.film_id, " +
+                "   films.name, " +
+                "   films.description, " +
+                "   films.release_date, " +
+                "   films.duration, " +
+                "   films.mpa_id, " +
+                "   film_directors.director_id as director_id, " +
+                "   directors.name as director_name, " +
+                "   mpa.name as mpa_name, " +
+                "   mpa.description as mpa_description " +
+                "from films " +
+                "   left join mpa " +
+                "   on films.mpa_id = mpa.mpa_id" +
+                "   left join film_directors " +
+                "   on films.film_id = film_directors.film_id" +
+                "   left join directors " +
+                "   on film_directors.director_id = directors.director_id " +
+                "   left join film_likes    " +
+                "   on films.film_id = film_likes.film_id ";
+        boolean isSearchByDirector = false;
+        if (by.contains("director")) {
+            sqlQuery = sqlQuery + " where lower(directors.name) like lower('%" + query + "%')";
+            isSearchByDirector = true;
+        }
+        if (by.contains("title")) {
+            if (isSearchByDirector) {
+                sqlQuery = sqlQuery + " or ";
+            } else {
+                sqlQuery = sqlQuery + " where ";
+            }
+            sqlQuery = sqlQuery + "lower(films.name) like lower('%" + query + "%')";
+        }
+        sqlQuery = sqlQuery + "   group by films.film_id    " +
+                "order by count(film_likes.user_id) desc;";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
+    }
+
     @Override
     public boolean filmExist(Long id) {
         String sqlQuery = "select 1 from films where film_id = ? limit 1";
@@ -474,4 +513,37 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, userId, userId);
     }
+
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        String sqlQuery = "" +
+                "select " +
+        "films.film_id, " +
+                "films.name, " +
+                "films.description, " +
+                "films.release_date, " +
+                "films.duration, " +
+                "films.mpa_id, " +
+                "mpa.name as mpa_name, " +
+        "mpa.description as mpa_description " +
+        "from films " +
+        "left join mpa " +
+        "on films.mpa_id = mpa.mpa_id " +
+        "left join film_likes " +
+        "on films.film_id = film_likes.film_id " +
+        "where " +
+        "films.film_id in " +
+        "(select " +
+        "film_likes.film_id " +
+        "from film_likes " +
+        "inner join film_likes as friend_likes " +
+        "on film_likes.film_id = friend_likes.film_id " +
+        "where " +
+        "film_likes.user_id = ? " +
+        "and friend_likes.user_id = ?) " +
+        "group by films.film_id " +
+        "order by count(film_likes.user_id) ";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, userId, otherId);
+    }
+
 }
