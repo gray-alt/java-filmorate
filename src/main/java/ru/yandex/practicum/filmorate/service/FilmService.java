@@ -146,6 +146,7 @@ public class FilmService {
 
     public Collection<Film> getTopByLikes(Integer count, Integer genreId, Integer year) {
         return filmStorage.getPopularFilms(count, genreId, year);
+    }
 
     public Collection<Film> searchFilms(String query, List<String> by) {
         if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
