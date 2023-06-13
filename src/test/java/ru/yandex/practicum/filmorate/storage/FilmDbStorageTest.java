@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
@@ -263,7 +264,7 @@ public class FilmDbStorageTest {
 
         Optional<Film> optionalFilm2 = filmStorage.addFilm(newFilm2);
 
-        Collection<Film> films = filmStorage.getDirectorFilms(1L, "year");
+        Collection<Film> films = filmStorage.getDirectorFilms(1L, SortType.YEAR);
 
         assertThat(optionalFilm).isPresent();
         assertThat(optionalFilm2).isPresent();
@@ -298,7 +299,7 @@ public class FilmDbStorageTest {
         filmStorage.addLike(optionalFilm2.get().getId(), optionalUser.get().getId());
         filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId());
 
-        Collection<Film> filmsSortedByLikes = filmStorage.getDirectorFilms(1L, "likes");
+        Collection<Film> filmsSortedByLikes = filmStorage.getDirectorFilms(1L, SortType.LIKES);
 
         assertThat(filmsSortedByLikes).size().isEqualTo(2);
         assertThat(filmsSortedByLikes)

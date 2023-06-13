@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -12,13 +13,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/reviews")
+@RequiredArgsConstructor
 @Slf4j
 public class ReviewController {
     private final ReviewService reviewService;
-
-    public ReviewController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
 
     @PostMapping
     public Optional<Review> addReview(@Valid @RequestBody Review review) {

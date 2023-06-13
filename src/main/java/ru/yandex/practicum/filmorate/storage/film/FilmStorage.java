@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +45,7 @@ public interface FilmStorage {
 
     Optional<Director> getDirector(Long id);
 
-    Collection<Film> getDirectorFilms(Long directorId, String sort);
+    Collection<Film> getDirectorFilms(Long directorId, SortType sort);
 
     void removeDirector(Long id);
 

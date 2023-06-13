@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -100,10 +98,9 @@ public class FilmService {
     }
 
     public Optional<Director> updateDirector(Director director) {
-        Optional<Director> directorForUpdate = filmStorage.getDirector(director.getId());
-        if (directorForUpdate.isEmpty()) {
-            throw new NotFoundException("Режиссёра с id " + director.getId() + " не существует.");
-        }
+        filmStorage.getDirector(director.getId())
+                .orElseThrow(() -> new NotFoundException("Режиссёра с id " + director.getId() + " не существует."));
+
         return filmStorage.updateDirector(director);
     }
 
@@ -120,19 +117,15 @@ public class FilmService {
     }
 
     public void removeDirector(Long id) {
-        Optional<Director> director = filmStorage.getDirector(id);
-        if (director.isEmpty()) {
-            throw new NotFoundException("Режиссёра с id " + id + " не существует.");
-        }
+        filmStorage.getDirector(id)
+                .orElseThrow(() -> new NotFoundException("Режиссёра с id " + id + " не существует."));
+
         filmStorage.removeDirector(id);
     }
 
-    public Collection<Film> getDirectorFilms(Long directorId, String sort) {
+    public Collection<Film> getDirectorFilms(Long directorId, SortType sort) {
         if (filmStorage.directorNotExist(directorId)) {
-            throw new NotFoundException("Фильм с id " + directorId + " не найден.");
-        }
-        if (!(sort.equals("year") || sort.equals("likes"))) {
-            throw new ValidationException("Не верно введённый параметр сортировки : " + sort);
+            throw new NotFoundException("Режиссёра с id " + directorId + " не существует.");
         }
         return filmStorage.getDirectorFilms(directorId, sort);
     }

@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,14 +96,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
     }
 
-    /*@Override
-    public Collection<Film> getPopularFilms(Integer count) {
-        return films.values().stream()
-                .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
-    }  */
-
     @Override
     public Collection<Mpa> getAllMpa() {
         return null;
@@ -176,8 +166,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getDirectorFilms(Long directorId, String sort) {
-        if (sort.equals("year")) {
+    public Collection<Film> getDirectorFilms(Long directorId, SortType sort) {
+        if (sort == SortType.YEAR) {
             return films.values().stream()
                     .sorted((f0, f1) -> f1.getReleaseDate().getYear() - f0.getReleaseDate().getYear())
                     .collect(Collectors.toList());

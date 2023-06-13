@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
 import java.sql.ResultSet;
@@ -14,15 +18,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component("filmDbStorage")
+@RequiredArgsConstructor
 @Slf4j
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final EventManager eventManager;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, EventManager eventManager) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.eventManager = eventManager;
-    }
 
     @Override
     public Optional<Film> addFilm(Film film) {
@@ -409,9 +409,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getDirectorFilms(Long directorId, String sort) {
+    public Collection<Film> getDirectorFilms(Long directorId, SortType sort) {
         String sqlQuery;
-        if (sort.equals("year")) {
+        if (sort == SortType.YEAR) {
             sqlQuery = "select " +
                     "   films.film_id, " +
                     "   films.name, " +

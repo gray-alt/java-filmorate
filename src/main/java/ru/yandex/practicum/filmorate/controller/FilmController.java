@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
@@ -17,14 +18,10 @@ import java.util.Optional;
 
 @RestController()
 @RequestMapping("/films")
+@RequiredArgsConstructor
 @Slf4j
 public class FilmController {
     private final FilmService filmService;
-
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @PostMapping
     public Optional<Film> addFilm(@Valid @RequestBody Film film) {
@@ -72,7 +69,11 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public Collection<Film> getDirectorFilms(@PathVariable Long directorId,
                                              @RequestParam(value = "sortBy") String sort) {
-        return filmService.getDirectorFilms(directorId, sort);
+        SortType sortType = SortType.getSortTypeByString(sort);
+        if (sortType == null) {
+            throw new ValidationException("Не верно введённый параметр сортировки : " + sort);
+        }
+        return filmService.getDirectorFilms(directorId, sortType);
     }
 
     @DeleteMapping("/{filmId}")

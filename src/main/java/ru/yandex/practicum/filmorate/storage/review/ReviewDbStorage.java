@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
@@ -17,15 +18,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component("reviewDbStorage")
+@RequiredArgsConstructor
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final EventManager eventManager;
-
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, EventManager eventManager) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.eventManager = eventManager;
-    }
 
     @Override
     public Optional<Review> addReview(Review review) {

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -11,13 +12,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/directors")
+@RequiredArgsConstructor
 @Slf4j
 public class DirectorController {
     private final FilmService filmService;
-
-    public DirectorController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @PostMapping
     public Optional<Director> addDirector(@Valid @RequestBody Director director) {
