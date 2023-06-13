@@ -1,25 +1,30 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 
 @Component("userDbStorage")
+@RequiredArgsConstructor
 @Slf4j
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final EventManager eventManager;
 
     @Override
     public Optional<User> addUser(User user) {
@@ -54,8 +59,8 @@ public class UserDbStorage implements UserStorage {
     public Optional<User> updateUser(User user) {
         String sqlQuery =
                 "update users set " +
-                "login = ?, email = ?, name = ?, birthday = ? " +
-                "where user_id = ?";
+                        "login = ?, email = ?, name = ?, birthday = ? " +
+                        "where user_id = ?";
 
         int rowCount = jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
@@ -108,6 +113,9 @@ public class UserDbStorage implements UserStorage {
     public void addFriend(Long userId, Long friendId) {
         String sqlQuery = "merge into friends(user_id, friend_id, status) key(user_id, friend_id) values(?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, 0);
+
+        eventManager.updateEvents(userId, EventType.FRIEND, Operation.ADD, friendId);
+
         log.info("Пользователю с id " + userId + " отправлена заявка в друзья от пользователя с id " + friendId);
     }
 
@@ -115,6 +123,9 @@ public class UserDbStorage implements UserStorage {
     public void removeFriend(Long userId, Long friendId) {
         String sqlQuery = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
+
+        eventManager.updateEvents(userId, EventType.FRIEND, Operation.REMOVE, friendId);
+
         log.info("У пользователя с id " + userId + " удален друг с id " + friendId);
     }
 
@@ -138,17 +149,22 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         String sqlQuery = "select * from users where user_id in (" +
-                    "select friends.friend_id from friends as friends " +
-                    "inner join friends as other_friends " +
-                    "on friends.friend_id = other_friends.friend_id "  +
-                    "where  friends.user_id = ? and other_friends.user_id = ?" +
+                "select friends.friend_id from friends as friends " +
+                "inner join friends as other_friends " +
+                "on friends.friend_id = other_friends.friend_id " +
+                "where  friends.user_id = ? and other_friends.user_id = ?" +
                 ")";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 
+    @Override
+    public void deleteUserById(Long id) {
+        jdbcTemplate.update("delete from users where user_id = ?", id);
+    }
+
     private Optional<User> getUserById(Long id) {
         String sqlQuery = "select * from users where user_id = ?";
-        Collection<User> users =  jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
+        Collection<User> users = jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
         return users.stream().findFirst();
     }
 
@@ -162,5 +178,4 @@ public class UserDbStorage implements UserStorage {
                 .friends(new HashSet<>())
                 .build();
     }
-
 }

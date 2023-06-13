@@ -4,14 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -19,7 +15,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new ConcurrentHashMap<>();
+    private final Map<Long, Director> directors = new ConcurrentHashMap<>();
     private long lastId = 0;
+    private long directorId = 0;
 
     @Override
     public Optional<Film> addFilm(Film film) {
@@ -40,6 +38,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Optional<Film> updateFilm(Film film) throws ValidationException {
         Optional<Film> foundFilm = getFilmById(film.getId());
+        if (foundFilm.isEmpty()) {
+            return Optional.empty();
+        }
         Film newFilm = Film.builder()
                 .id(film.getId())
                 .name(film.getName())
@@ -76,6 +77,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().addLike(userId);
         log.info("Фильму с id " + id + " поставил лайк пользователь с id " + userId);
     }
@@ -83,16 +88,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void removeLike(Long id, Long userId) throws ValidationException {
         Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) {
+            log.info("Не найден фильм с id " + id);
+            return;
+        }
         film.get().removeLike(userId);
         log.info("У фильма с id " + id + " удален лайк пользователя с id " + userId);
-    }
-
-    @Override
-    public Collection<Film> getPopularFilms(Integer count) {
-        return films.values().stream()
-                .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -115,6 +116,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         return Optional.empty();
     }
 
+    @Override
+    public void deleteFilmById(Long id) {
+
+    }
+
+
     private Optional<Film> getFilmById(Long id) throws ValidationException {
         if (id == null) {
             throw new ValidationException("Не передан id фильма.");
@@ -123,5 +130,76 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
 
         return Optional.of(films.get(id));
+    }
+
+    @Override
+    public Optional<Director> addDirector(Director director) {
+        Director newDirector = Director.builder().id(++directorId).name(director.getName()).build();
+        directors.put(newDirector.getId(), newDirector);
+        return Optional.of(newDirector);
+    }
+
+    @Override
+    public Optional<Director> updateDirector(Director director) {
+        directors.replace(director.getId(), director);
+        return Optional.of(director);
+    }
+
+    @Override
+    public boolean directorExist(Long id) {
+        return directors.containsKey(id);
+    }
+
+    @Override
+    public boolean directorNotExist(Long id) {
+        return !directors.containsKey(id);
+    }
+
+    @Override
+    public Collection<Director> getAllDirectors() {
+        return directors.values();
+    }
+
+    @Override
+    public Optional<Director> getDirector(Long id) {
+        return Optional.of(directors.get(id));
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilms(Long directorId, SortType sort) {
+        if (sort == SortType.YEAR) {
+            return films.values().stream()
+                    .sorted((f0, f1) -> f1.getReleaseDate().getYear() - f0.getReleaseDate().getYear())
+                    .collect(Collectors.toList());
+        } else {
+            return films.values().stream()
+                    .sorted((f0, f1) -> f1.getLikes().size() - f0.getLikes().size())
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void removeDirector(Long id) {
+        directors.remove(id);
+        log.info("Режиссёр с id " + id + " удалён.");
+    }
+
+    @Override
+    public Collection<Film> getFilmsRecommendation(long userId) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(Integer count, Integer genre, Integer year) {
+        return null;
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        return null;
     }
 }

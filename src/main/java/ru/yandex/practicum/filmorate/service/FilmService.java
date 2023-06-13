@@ -4,13 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,10 +69,6 @@ public class FilmService {
         filmStorage.removeLike(id, userId);
     }
 
-    public Collection<Film> getPopularFilms(Integer count) {
-        return filmStorage.getPopularFilms(count);
-    }
-
     public Collection<Mpa> getAllMpa() {
         return filmStorage.getAllMpa();
     }
@@ -94,5 +91,67 @@ public class FilmService {
             throw new NotFoundException("Жанра с id " + id + " не существует.");
         }
         return genre;
+    }
+
+    public Optional<Director> addDirector(Director director) {
+        return filmStorage.addDirector(director);
+    }
+
+    public Optional<Director> updateDirector(Director director) {
+        filmStorage.getDirector(director.getId())
+                .orElseThrow(() -> new NotFoundException("Режиссёра с id " + director.getId() + " не существует."));
+
+        return filmStorage.updateDirector(director);
+    }
+
+    public Collection<Director> getAllDirectors() {
+        return filmStorage.getAllDirectors();
+    }
+
+    public Optional<Director> getDirector(Long id) {
+        Optional<Director> director = filmStorage.getDirector(id);
+        if (director.isEmpty()) {
+            throw new NotFoundException("Режиссёра с id " + id + " не существует.");
+        }
+        return director;
+    }
+
+    public void removeDirector(Long id) {
+        filmStorage.getDirector(id)
+                .orElseThrow(() -> new NotFoundException("Режиссёра с id " + id + " не существует."));
+
+        filmStorage.removeDirector(id);
+    }
+
+    public Collection<Film> getDirectorFilms(Long directorId, SortType sort) {
+        if (filmStorage.directorNotExist(directorId)) {
+            throw new NotFoundException("Режиссёра с id " + directorId + " не существует.");
+        }
+        return filmStorage.getDirectorFilms(directorId, sort);
+    }
+
+    public void deleteFilmById(Long id) {
+        if (filmStorage.filmNotExist(id)) {
+            throw new NotFoundException("Нет фильма с таким id");
+        }
+        filmStorage.deleteFilmById(id);
+    }
+
+    public Collection<Film> getTopByLikes(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.size() > 2 || (!by.contains("director") & !by.contains("title"))) {
+            throw new ValidationException("Некорректный запрос. Можно искать только по режиссёру и/или названию фильма.");
+        }
+        return filmStorage.searchFilms(query, by);
+    }
+
+    public Collection<Film> getCommonFilms(Long userId, Long otherId) {
+        if (userId.equals(otherId)) {
+            throw new ValidationException("Введён один и тот же Id. Для получения общих фильмов необходимо ввести Id друга. ");
+        }
+        return filmStorage.getCommonFilms(userId, otherId);
     }
 }
