@@ -9,9 +9,7 @@ import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +44,9 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable Long id, @PathVariable Long userId,
                         @RequestParam(required = false, defaultValue = "1")
-                        @Positive Integer mark) {
+                        @Min(value = 1)
+                        @Max(value = 10)
+                        Integer mark) {
         filmService.addLike(id, userId, mark);
     }
 
