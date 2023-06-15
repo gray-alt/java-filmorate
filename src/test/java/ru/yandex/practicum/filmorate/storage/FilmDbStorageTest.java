@@ -295,9 +295,9 @@ public class FilmDbStorageTest {
         assertThat(optionalUser).isPresent();
         assertThat(optionalUser2).isPresent();
 
-        filmStorage.addLike(optionalFilm.get().getId(), optionalUser.get().getId());
-        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser.get().getId());
-        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId());
+        filmStorage.addLike(optionalFilm.get().getId(), optionalUser.get().getId(), 1);
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser.get().getId(), 2);
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId(), 3);
 
         Collection<Film> filmsSortedByLikes = filmStorage.getDirectorFilms(1L, SortType.LIKES);
 
@@ -366,7 +366,7 @@ public class FilmDbStorageTest {
         assertThat(optionalUser)
                 .isPresent();
 
-        filmStorage.addLike(newFilm.getId(), optionalUser.get().getId());
+        filmStorage.addLike(newFilm.getId(), optionalUser.get().getId(), 1);
 
         optionalFilm = filmStorage.getFilm(newFilm.getId());
 
@@ -408,7 +408,7 @@ public class FilmDbStorageTest {
         assertThat(optionalUser)
                 .isPresent();
 
-        filmStorage.addLike(optionalFilm.get().getId(), optionalUser.get().getId());
+        filmStorage.addLike(optionalFilm.get().getId(), optionalUser.get().getId(), 1);
 
         optionalFilm = filmStorage.getFilm(optionalFilm.get().getId());
 
@@ -480,9 +480,9 @@ public class FilmDbStorageTest {
         assertThat(userOptional2)
                 .isPresent();
 
-        filmStorage.addLike(optionalFilm1.get().getId(), userOptional1.get().getId());
-        filmStorage.addLike(optionalFilm1.get().getId(), userOptional2.get().getId());
-        filmStorage.addLike(optionalFilm2.get().getId(), userOptional1.get().getId());
+        filmStorage.addLike(optionalFilm1.get().getId(), userOptional1.get().getId(), 5);
+        filmStorage.addLike(optionalFilm1.get().getId(), userOptional2.get().getId(), 5);
+        filmStorage.addLike(optionalFilm2.get().getId(), userOptional1.get().getId(), 1);
 
         Collection<Film> films = filmStorage.getPopularFilms(2, 0, 0);
         List<Film> listFilms = (List<Film>) films;
@@ -630,13 +630,20 @@ public class FilmDbStorageTest {
                 .isPresent();
 
         //Add likes
-        filmStorage.addLike(optionalFilm1.get().getId(), optionalUser1.get().getId());
-        filmStorage.addLike(optionalFilm1.get().getId(), optionalUser2.get().getId());
-        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId());
-        filmStorage.addLike(optionalFilm3.get().getId(), optionalUser3.get().getId());
+        filmStorage.addLike(optionalFilm1.get().getId(), optionalUser1.get().getId(), 1);
+        filmStorage.addLike(optionalFilm1.get().getId(), optionalUser2.get().getId(), 1);
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId(), 4);
+        filmStorage.addLike(optionalFilm3.get().getId(), optionalUser3.get().getId(), 8);
+
+        //Get empty recommendation (because all recommend films have negative marks (1 - 5))
+        Collection<Film> films = filmStorage.getFilmsRecommendation(optionalUser1.get().getId());
+
+        assertThat(films).isEmpty();
 
         //Get recommendation
-        Collection<Film> films = filmStorage.getFilmsRecommendation(optionalUser1.get().getId());
+        filmStorage.addLike(optionalFilm2.get().getId(), optionalUser2.get().getId(), 6);
+
+        films = filmStorage.getFilmsRecommendation(optionalUser1.get().getId());
         List<Film> listFilms = (List<Film>) films;
 
         assertThat(films)

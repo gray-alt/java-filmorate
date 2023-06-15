@@ -21,7 +21,7 @@ public interface FilmStorage {
 
     boolean filmNotExist(Long id);
 
-    void addLike(Long id, Long userId) throws ValidationException;
+    void addLike(Long id, Long userId, Integer mark) throws ValidationException;
 
     void removeLike(Long id, Long userId) throws ValidationException;
 

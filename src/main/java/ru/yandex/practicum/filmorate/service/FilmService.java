@@ -49,14 +49,14 @@ public class FilmService {
         return filmStorage.getFilms();
     }
 
-    public void addLike(Long id, Long userId) {
+    public void addLike(Long id, Long userId, Integer mark) {
         if (filmStorage.filmNotExist(id)) {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
         if (userStorage.userNotExist(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден.");
         }
-        filmStorage.addLike(id, userId);
+        filmStorage.addLike(id, userId, mark);
     }
 
     public void removeLike(Long id, Long userId) {

@@ -75,7 +75,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(Long id, Long userId) throws ValidationException {
+    public void addLike(Long id, Long userId, Integer mark) throws ValidationException {
         Optional<Film> film = getFilmById(id);
         if (film.isEmpty()) {
             log.info("Не найден фильм с id " + id);

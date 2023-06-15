@@ -379,7 +379,7 @@ class UserDbStorageTest {
         assertThat(optionalFilm)
                 .isPresent();
 
-        filmStorage.addLike(optionalFilm.get().getId(), optionalUser1.get().getId());
+        filmStorage.addLike(optionalFilm.get().getId(), optionalUser1.get().getId(), 1);
         filmStorage.removeLike(optionalFilm.get().getId(), optionalUser1.get().getId());
 
         Review review = Review.builder()
@@ -407,11 +407,11 @@ class UserDbStorageTest {
         assertThat(optionalUpdatedReview)
                 .isPresent();
 
-        assertThat(optionalUpdatedReview.get().getContent().equals("Обновленный обзор"));
+        assertThat(optionalUpdatedReview.get().getContent()).isEqualTo("Обновленный обзор");
 
         reviewDbStorage.deleteReview(1L);
 
-        assertThat(reviewDbStorage.getReview(1L).isEmpty());
+        assertThat(reviewDbStorage.getReview(1L)).isEmpty();
 
         Collection<Event> events = eventManager.getEvents(optionalUser1.get().getId());
 

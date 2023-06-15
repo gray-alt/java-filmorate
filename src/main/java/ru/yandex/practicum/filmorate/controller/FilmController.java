@@ -44,19 +44,23 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) throws ValidationException {
-        filmService.addLike(id, userId);
+    public void addLike(@PathVariable Long id, @PathVariable Long userId,
+                        @RequestParam(required = false, defaultValue = "1")
+                        @Positive Integer mark) {
+        filmService.addLike(id, userId, mark);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable Long id, @PathVariable Long userId) throws ValidationException {
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
     public Collection<Film> getTopFilmsByLikes(@RequestParam(defaultValue = "10") @Positive Integer count,
-                                               @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer genreId,
-                                               @RequestParam(required = false, defaultValue = "0") @PositiveOrZero Integer year) {
+                                               @RequestParam(required = false, defaultValue = "0")
+                                               @PositiveOrZero Integer genreId,
+                                               @RequestParam(required = false, defaultValue = "0")
+                                               @PositiveOrZero Integer year) {
         return filmService.getTopByLikes(count, genreId, year);
     }
 

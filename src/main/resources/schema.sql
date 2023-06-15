@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS film_directors (
 CREATE TABLE IF NOT EXISTS film_likes (
 	film_id BIGINT REFERENCES films (film_id) ON DELETE CASCADE,
 	user_id BIGINT REFERENCES users (user_id) ON DELETE CASCADE,
+	mark INTEGER,
 	CONSTRAINT PK_FILM_LIKES PRIMARY KEY (film_id,user_id)
 );
 
